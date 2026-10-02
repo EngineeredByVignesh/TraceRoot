@@ -1,0 +1,418 @@
+import { createWorkersAI } from "workers-ai-provider";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { callable, routeAgentRequest, type Schedule } from "agents";
+import { getSchedulePrompt, scheduleSchema } from "agents/schedule";
+import { AIChatAgent, type OnChatMessageOptions } from "@cloudflare/ai-chat";
+import {
+  convertToModelMessages,
+  pruneMessages,
+  stepCountIs,
+  streamText,
+  tool
+} from "ai";
+import { z } from "zod";
+import {
+  getAlerts,
+  getDeployments,
+  queryLogs,
+  queryMetrics
+} from "./incident-tools";
+import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
+import { observeToolCall } from "./tool-telemetry";
+export { InvestigationWorkflow } from "./investigation-workflow";
+
+export class ChatAgent extends AIChatAgent<Env> {
+  maxPersistedMessages = 100;
+  chatRecovery = true;
+  // Wait for MCP connections to be re-established after hibernation before
+  // processing a message, so MCP tools aren't intermittently missing.
+  waitForMcpConnections = true;
+
+  onStart() {
+    // Configure OAuth popup behavior for MCP servers that require authentication
+    this.mcp.configureOAuthCallback({
+      customHandler: (result) => {
+        if (result.authSuccess) {
+          return new Response("<script>window.close();</script>", {
+            headers: { "content-type": "text/html" },
+            status: 200
+          });
+        }
+        return new Response(
+          `Authentication Failed: ${result.authError || "Unknown error"}`,
+          { headers: { "content-type": "text/plain" }, status: 400 }
+        );
+      }
+    });
+  }
+
+  @callable()
+  async addServer(name: string, url: string) {
+    return await this.addMcpServer(name, url);
+  }
+
+  @callable()
+  async removeServer(serverId: string) {
+    await this.removeMcpServer(serverId);
+  }
+
+  async onChatMessage(_onFinish: unknown, options?: OnChatMessageOptions) {
+    const mcpTools = this.mcp.getAITools();
+    const workersai = createWorkersAI({ binding: this.env.AI });
+    const google = createGoogleGenerativeAI({
+      apiKey: this.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      baseURL: this.env.AI_GATEWAY_BASE_URL || undefined,
+      headers: this.env.AI_GATEWAY_TOKEN
+        ? {
+            "cf-aig-authorization": `Bearer ${this.env.AI_GATEWAY_TOKEN}`
+          }
+        : undefined
+    });
+
+    const modelProvider = this.env.MODEL_PROVIDER as "google" | "cloudflare";
+    const model =
+      modelProvider === "cloudflare"
+        ? workersai(this.env.CLOUDFLARE_AI_MODEL, {
+            sessionAffinity: this.sessionAffinity
+          })
+        : google(this.env.GEMINI_MODEL);
+
+    const result = streamText({
+      model,
+      system: `You are a Cloudflare Incident Investigator Agent for a local Kubernetes incident lab.
+
+You have four incident tools:
+- getDeployments: use it when the user asks about the demo-service deployment, rollout, version, image, or active failure mode.
+- getAlerts: use it when the user asks about current alerts, symptoms, firing alerts, or whether the incident has triggered Alertmanager.
+- queryMetrics: use it to run PromQL against Prometheus for error rate, latency, request volume, and service health.
+- queryLogs: use it to run LogQL against Loki for demo-service error messages and symptoms.
+- startInvestigationWorkflow: use it when the user wants a durable/long-running investigation that can retry and resume.
+- getInvestigationWorkflowStatus: use it when the user asks for the status or result of a durable investigation.
+- searchSimilarIncidents: use it early in investigations to find previous incidents with similar symptoms.
+- rememberIncident: use it when the user asks to save an incident, RCA, root cause, or remediation for future memory.
+
+For incident investigations, gather deployment metadata, alerts, metrics, and logs before giving a root-cause answer.
+When answering from tool results, summarize concrete evidence and avoid guessing.
+
+${getSchedulePrompt({ date: new Date() })}
+
+If the user asks to schedule a task, use the schedule tool to schedule the task.`,
+      // Prune old tool calls and reasoning to save tokens on long conversations
+      messages: pruneMessages({
+        messages: await convertToModelMessages(this.messages),
+        toolCalls: "before-last-2-messages",
+        reasoning: "before-last-message"
+      }),
+      tools: {
+        // MCP tools from connected servers
+        ...mcpTools,
+
+        queryMetrics: tool({
+          description:
+            "Run an instant PromQL query against Prometheus. Use this for demo-service error rates, latency, request volume, and service health.",
+          inputSchema: z.object({
+            query: z.string().describe("PromQL query to execute")
+          }),
+          execute: async ({ query }) => {
+            return observeToolCall(
+              "queryMetrics",
+              "tool_api",
+              { queryLength: query.length },
+              () => queryMetrics(this.env, query)
+            );
+          }
+        }),
+
+        queryLogs: tool({
+          description:
+            "Run a LogQL query against Loki. Use this to inspect demo-service logs for errors, timeouts, and failure-mode symptoms.",
+          inputSchema: z.object({
+            query: z
+              .string()
+              .default('{namespace="incident-lab"}')
+              .describe("LogQL query to execute"),
+            limit: z
+              .number()
+              .int()
+              .min(1)
+              .max(500)
+              .default(100)
+              .describe("Maximum log entries to return"),
+            sinceSeconds: z
+              .number()
+              .int()
+              .min(60)
+              .max(86400)
+              .default(1800)
+              .describe("How far back to query, in seconds")
+          }),
+          execute: async ({ query, limit, sinceSeconds }) => {
+            return observeToolCall(
+              "queryLogs",
+              "tool_api",
+              { queryLength: query.length, limit, sinceSeconds },
+              () => queryLogs(this.env, query, limit, sinceSeconds)
+            );
+          }
+        }),
+
+        getAlerts: tool({
+          description:
+            "Fetch current Alertmanager alerts from the local Kubernetes observability stack.",
+          inputSchema: z.object({}),
+          execute: async () => {
+            return observeToolCall("getAlerts", "tool_api", {}, () =>
+              getAlerts(this.env)
+            );
+          }
+        }),
+
+        getDeployments: tool({
+          description:
+            "Fetch Kubernetes deployment metadata for demo-service, including image, annotations, rollout status, app version, and active failure mode.",
+          inputSchema: z.object({}),
+          execute: async () => {
+            return observeToolCall("getDeployments", "tool_api", {}, () =>
+              getDeployments(this.env)
+            );
+          }
+        }),
+
+        startInvestigationWorkflow: tool({
+          description:
+            "Start a durable Cloudflare Workflow investigation for demo-service. Use this for long-running investigations that should retry and resume after failures.",
+          inputSchema: z.object({
+            question: z
+              .string()
+              .default("Investigate demo-service.")
+              .describe("The investigation question or incident prompt"),
+            sinceSeconds: z
+              .number()
+              .int()
+              .min(300)
+              .max(86400)
+              .default(1800)
+              .describe("How far back logs should be collected, in seconds")
+          }),
+          execute: async ({ question, sinceSeconds }) => {
+            return observeToolCall(
+              "startInvestigationWorkflow",
+              "workflow",
+              { questionLength: question.length, sinceSeconds },
+              async () => {
+                const instance = await this.env.INVESTIGATION_WORKFLOW.create({
+                  params: { question, sinceSeconds }
+                });
+                return {
+                  id: instance.id,
+                  status: await instance.status()
+                };
+              }
+            );
+          }
+        }),
+
+        getInvestigationWorkflowStatus: tool({
+          description:
+            "Fetch the status and result of a durable Cloudflare Workflow investigation by instance ID.",
+          inputSchema: z.object({
+            instanceId: z
+              .string()
+              .describe(
+                "Cloudflare Workflow instance ID returned by startInvestigationWorkflow"
+              )
+          }),
+          execute: async ({ instanceId }) => {
+            return observeToolCall(
+              "getInvestigationWorkflowStatus",
+              "workflow",
+              { instanceId },
+              async () => {
+                const instance =
+                  await this.env.INVESTIGATION_WORKFLOW.get(instanceId);
+                return instance.status();
+              }
+            );
+          }
+        }),
+
+        searchSimilarIncidents: tool({
+          description:
+            "Search historical incident memory for similar symptoms, root causes, or remediations.",
+          inputSchema: z.object({
+            query: z
+              .string()
+              .describe(
+                "Current incident symptoms or question to search historical incidents for"
+              ),
+            topK: z
+              .number()
+              .int()
+              .min(1)
+              .max(10)
+              .default(5)
+              .describe("Maximum number of similar incidents to return")
+          }),
+          execute: async ({ query, topK }) => {
+            return observeToolCall(
+              "searchSimilarIncidents",
+              "memory",
+              { queryLength: query.length, topK },
+              () => searchSimilarIncidents(this.env, query, topK)
+            );
+          }
+        }),
+
+        rememberIncident: tool({
+          description:
+            "Store an incident/RCA in long-term Vectorize memory so future investigations can retrieve it.",
+          inputSchema: z.object({
+            title: z.string().describe("Short incident title"),
+            summary: z.string().describe("Brief incident summary"),
+            rootCause: z.string().describe("Confirmed or likely root cause"),
+            remediation: z
+              .string()
+              .describe("Remediation or mitigation that resolved the incident"),
+            labels: z
+              .array(z.string())
+              .default([])
+              .describe(
+                "Optional labels such as service, symptom, or failure mode"
+              )
+          }),
+          execute: async (input) => {
+            return observeToolCall(
+              "rememberIncident",
+              "memory",
+              {
+                titleLength: input.title.length,
+                labelCount: input.labels.length
+              },
+              () => rememberIncident(this.env, input)
+            );
+          }
+        }),
+
+        // Client-side tool: no execute function — the browser handles it
+        getUserTimezone: tool({
+          description:
+            "Get the user's timezone from their browser. Use this when you need to know the user's local time.",
+          inputSchema: z.object({})
+        }),
+
+        // Approval tool: requires user confirmation before executing
+        calculate: tool({
+          description:
+            "Perform a math calculation with two numbers. Requires user approval for large numbers.",
+          inputSchema: z.object({
+            a: z.number().describe("First number"),
+            b: z.number().describe("Second number"),
+            operator: z
+              .enum(["+", "-", "*", "/", "%"])
+              .describe("Arithmetic operator")
+          }),
+          needsApproval: async ({ a, b }) =>
+            Math.abs(a) > 1000 || Math.abs(b) > 1000,
+          execute: async ({ a, b, operator }) => {
+            const ops: Record<string, (x: number, y: number) => number> = {
+              "+": (x, y) => x + y,
+              "-": (x, y) => x - y,
+              "*": (x, y) => x * y,
+              "/": (x, y) => x / y,
+              "%": (x, y) => x % y
+            };
+            if (operator === "/" && b === 0) {
+              return { error: "Division by zero" };
+            }
+            return {
+              expression: `${a} ${operator} ${b}`,
+              result: ops[operator](a, b)
+            };
+          }
+        }),
+
+        scheduleTask: tool({
+          description:
+            "Schedule a task to be executed at a later time. Use this when the user asks to be reminded or wants something done later.",
+          inputSchema: scheduleSchema,
+          execute: async ({ when, description }) => {
+            if (when.type === "no-schedule") {
+              return "Not a valid schedule input";
+            }
+            const input =
+              when.type === "scheduled"
+                ? when.date
+                : when.type === "delayed"
+                  ? when.delayInSeconds
+                  : when.type === "cron"
+                    ? when.cron
+                    : null;
+            if (!input) return "Invalid schedule type";
+            try {
+              this.schedule(input, "executeTask", description, {
+                idempotent: true
+              });
+              return `Task scheduled: "${description}" (${when.type}: ${input})`;
+            } catch (error) {
+              return `Error scheduling task: ${error}`;
+            }
+          }
+        }),
+
+        getScheduledTasks: tool({
+          description: "List all tasks that have been scheduled",
+          inputSchema: z.object({}),
+          execute: async () => {
+            const tasks = this.getSchedules();
+            return tasks.length > 0 ? tasks : "No scheduled tasks found.";
+          }
+        }),
+
+        cancelScheduledTask: tool({
+          description: "Cancel a scheduled task by its ID",
+          inputSchema: z.object({
+            taskId: z.string().describe("The ID of the task to cancel")
+          }),
+          execute: async ({ taskId }) => {
+            try {
+              this.cancelSchedule(taskId);
+              return `Task ${taskId} cancelled.`;
+            } catch (error) {
+              return `Error cancelling task: ${error}`;
+            }
+          }
+        })
+      },
+      stopWhen: stepCountIs(20),
+      abortSignal: options?.abortSignal
+    });
+
+    return result.toUIMessageStreamResponse();
+  }
+
+  async executeTask(description: string, _task: Schedule<string>) {
+    // Do the actual work here (send email, call API, etc.)
+    console.log(`Executing scheduled task: ${description}`);
+
+    // Notify connected clients via a broadcast event.
+    // We use broadcast() instead of saveMessages() to avoid injecting
+    // into chat history — that would cause the AI to see the notification
+    // as new context and potentially loop.
+    this.broadcast(
+      JSON.stringify({
+        type: "scheduled-task",
+        description,
+        timestamp: new Date().toISOString()
+      })
+    );
+  }
+}
+
+export default {
+  async fetch(request: Request, env: Env) {
+    return (
+      (await routeAgentRequest(request, env)) ||
+      new Response("Not found", { status: 404 })
+    );
+  }
+} satisfies ExportedHandler<Env>;

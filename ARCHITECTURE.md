@@ -14,6 +14,7 @@ flowchart TD
     GoogleRoute -->|Direct| Gemini[Google Gemini]
     Gateway --> Gemini
     Agent -->|MODEL_PROVIDER=cloudflare| WorkersAI[Workers AI]
+    Agent -->|MODEL_PROVIDER=openrouter| OpenRouter[OpenRouter: selected chat model]
 
     Agent -->|Interactive evidence tools| APIPath[Tool API connection]
     Agent -->|Start and check status| Workflow[Cloudflare InvestigationWorkflow]
@@ -80,7 +81,7 @@ The workflow collects five fixed evidence sources sequentially: deployment metad
 ## State, Models, and Observability
 
 - Chat state is persisted by the Agent, with a configured maximum of 100 persisted messages and chat recovery enabled. Old tool calls and reasoning are pruned from model context.
-- Gemini chat is selected through `MODEL_PROVIDER=google` and `GEMINI_AI_MODEL`. Workers AI uses `MODEL_PROVIDER=cloudflare` and `CLOUDFLARE_AI_MODEL`. Provider and model configuration is required.
+- Chat uses a single provider factory: `MODEL_PROVIDER=google`, `cloudflare`, or `openrouter` selects `GEMINI_AI_MODEL`, `CLOUDFLARE_AI_MODEL`, or `OPENROUTER_AI_MODEL`. OpenRouter also requires its API key and base URL. Only the selected provider is initialized; configuration is required and there is no automatic application failover.
 - Embeddings use `EMBEDDING_PROVIDER` with `GEMINI_EMBEDDING_MODEL` or `CLOUDFLARE_EMBEDDING_MODEL`. `EMBEDDING_DIMENSIONS` must match the cosine Vectorize index; `INCIDENT_MEMORY_NAMESPACE` selects the namespace. Suggested values live in `.dev.vars.example`.
 - Google chat and embedding requests use AI Gateway when configured. Gateway logs expose model-level request status, latency, tokens, and estimated cost where reported.
 - The eight incident tools emit structured start, success, and failure logs with timing. HTTP responses from tools-api also emit request status and duration. Workers tracing is enabled in configuration; dedicated spans for every tool are not explicitly implemented.

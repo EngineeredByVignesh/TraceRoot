@@ -1,5 +1,3 @@
-import { createWorkersAI } from "workers-ai-provider";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { callable, routeAgentRequest, type Schedule } from "agents";
 import { getSchedulePrompt, scheduleSchema } from "agents/schedule";
 import { AIChatAgent, type OnChatMessageOptions } from "@cloudflare/ai-chat";
@@ -19,7 +17,7 @@ import {
 } from "./incident-tools";
 import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
 import { observeToolCall } from "./tool-telemetry";
-import { requireEnv, requireProvider } from "./config";
+import { createChatModel } from "./model-provider";
 export { InvestigationWorkflow } from "./investigation-workflow";
 
 export class ChatAgent extends AIChatAgent<Env> {
@@ -59,27 +57,7 @@ export class ChatAgent extends AIChatAgent<Env> {
 
   async onChatMessage(_onFinish: unknown, options?: OnChatMessageOptions) {
     const mcpTools = this.mcp.getAITools();
-    const workersai = createWorkersAI({ binding: this.env.AI });
-    const google = createGoogleGenerativeAI({
-      apiKey:
-        this.env.MODEL_PROVIDER === "google"
-          ? requireEnv(this.env, "GOOGLE_GENERATIVE_AI_API_KEY")
-          : undefined,
-      baseURL: this.env.AI_GATEWAY_BASE_URL || undefined,
-      headers: this.env.AI_GATEWAY_TOKEN
-        ? {
-            "cf-aig-authorization": `Bearer ${this.env.AI_GATEWAY_TOKEN}`
-          }
-        : undefined
-    });
-
-    const modelProvider = requireProvider(this.env, "MODEL_PROVIDER");
-    const model =
-      modelProvider === "cloudflare"
-        ? workersai(requireEnv(this.env, "CLOUDFLARE_AI_MODEL"), {
-            sessionAffinity: this.sessionAffinity
-          })
-        : google(requireEnv(this.env, "GEMINI_AI_MODEL"));
+    const model = createChatModel(this.env, this.sessionAffinity);
 
     const result = streamText({
       model,

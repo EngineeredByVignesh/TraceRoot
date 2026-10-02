@@ -3,10 +3,12 @@ TOOL_API_BASE_URL=http://localhost:8788
 TOOL_API_TOKEN=dev-token
 
 # Model provider.
-# Use MODEL_PROVIDER=google for Gemini or MODEL_PROVIDER=cloudflare for Workers AI.
+# MODEL_PROVIDER: google, cloudflare, or openrouter. Uncomment the selected model.
 MODEL_PROVIDER=google
 GEMINI_AI_MODEL=gemini-3.5-flash
 # CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
+# OPENROUTER_AI_MODEL=<provider/model-id>
+# OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
 # Incident memory embedding provider.
 # Use EMBEDDING_PROVIDER=google for Gemini embeddings or cloudflare for Workers AI embeddings.
@@ -20,6 +22,7 @@ INCIDENT_MEMORY_NAMESPACE=incident-memory
 
 # Provider credentials.
 GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
+# OPENROUTER_API_KEY=<openrouter-api-key>
 
 # Cloudflare AI Gateway routing for Google model calls.
 # AI_GATEWAY_BASE_URL=

@@ -4,6 +4,9 @@ interface Env {
   MODEL_PROVIDER: string;
   GEMINI_AI_MODEL: string;
   CLOUDFLARE_AI_MODEL: string;
+  OPENROUTER_AI_MODEL: string;
+  OPENROUTER_API_KEY: string;
+  OPENROUTER_BASE_URL: string;
   EMBEDDING_PROVIDER: string;
   GEMINI_EMBEDDING_MODEL: string;
   CLOUDFLARE_EMBEDDING_MODEL: string;

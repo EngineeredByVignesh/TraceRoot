@@ -10,12 +10,7 @@ Cloudflare Agent and tool API for investigating the local IncidentLab Kubernetes
 
 ## Local Tool API
 
-Run IncidentLab first, then start the supporting port-forwards:
-
-```powershell
-kubectl port-forward -n monitoring svc/kube-prometheus-stack-alertmanager 9093:9093
-kubectl port-forward -n monitoring svc/loki 3100:3100
-```
+Run IncidentLab first and keep its [observability port-forwards](../IncidentLab/README.md#observability-port-forwards) running before starting the tool API.
 
 Start the tool API:
 

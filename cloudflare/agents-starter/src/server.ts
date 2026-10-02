@@ -19,6 +19,7 @@ import {
 } from "./incident-tools";
 import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
 import { observeToolCall } from "./tool-telemetry";
+import { requireEnv, requireProvider } from "./config";
 export { InvestigationWorkflow } from "./investigation-workflow";
 
 export class ChatAgent extends AIChatAgent<Env> {
@@ -60,7 +61,10 @@ export class ChatAgent extends AIChatAgent<Env> {
     const mcpTools = this.mcp.getAITools();
     const workersai = createWorkersAI({ binding: this.env.AI });
     const google = createGoogleGenerativeAI({
-      apiKey: this.env.GOOGLE_GENERATIVE_AI_API_KEY,
+      apiKey:
+        this.env.MODEL_PROVIDER === "google"
+          ? requireEnv(this.env, "GOOGLE_GENERATIVE_AI_API_KEY")
+          : undefined,
       baseURL: this.env.AI_GATEWAY_BASE_URL || undefined,
       headers: this.env.AI_GATEWAY_TOKEN
         ? {
@@ -69,13 +73,13 @@ export class ChatAgent extends AIChatAgent<Env> {
         : undefined
     });
 
-    const modelProvider = this.env.MODEL_PROVIDER as "google" | "cloudflare";
+    const modelProvider = requireProvider(this.env, "MODEL_PROVIDER");
     const model =
       modelProvider === "cloudflare"
-        ? workersai(this.env.CLOUDFLARE_AI_MODEL, {
+        ? workersai(requireEnv(this.env, "CLOUDFLARE_AI_MODEL"), {
             sessionAffinity: this.sessionAffinity
           })
-        : google(this.env.GEMINI_MODEL);
+        : google(requireEnv(this.env, "GEMINI_AI_MODEL"));
 
     const result = streamText({
       model,

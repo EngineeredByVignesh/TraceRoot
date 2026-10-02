@@ -1,4 +1,4 @@
-# ADR3: Durable Investigations With Cloudflare Workflows
+# ADR4: Durable Investigations With Cloudflare Workflows
 
 ## Status
 
@@ -36,7 +36,7 @@ Keep the existing wrangler.jsonc binding:
 
 Use the configuration in [ADR2](ADR2-cloudflare-investigation-agent.md). No extra workflow secret or manual dashboard creation is required.
 
-From cloudflare/agents-starter, run npm run types after binding changes. Run npm run start locally or npm run deploy to provision the deployed workflow.
+From cloudflare/agents-starter, run npm run types after binding changes, then run npm run start locally.
 
 ## Verification
 

@@ -80,8 +80,8 @@ The workflow collects five fixed evidence sources sequentially: deployment metad
 ## State, Models, and Observability
 
 - Chat state is persisted by the Agent, with a configured maximum of 100 persisted messages and chat recovery enabled. Old tool calls and reasoning are pruned from model context.
-- Gemini chat is selected through `MODEL_PROVIDER=google` and `GEMINI_MODEL`. Workers AI is an alternative selected explicitly by configuration, rather than automatic failure fallback.
-- Embeddings have their own provider flag, `EMBEDDING_PROVIDER`. Gemini defaults to `gemini-embedding-001`; Workers AI uses `@cf/google/embeddinggemma-300m`. Both paths target the 768-dimensional cosine Vectorize index.
+- Gemini chat is selected through `MODEL_PROVIDER=google` and `GEMINI_AI_MODEL`. Workers AI uses `MODEL_PROVIDER=cloudflare` and `CLOUDFLARE_AI_MODEL`. Provider and model configuration is required.
+- Embeddings use `EMBEDDING_PROVIDER` with `GEMINI_EMBEDDING_MODEL` or `CLOUDFLARE_EMBEDDING_MODEL`. `EMBEDDING_DIMENSIONS` must match the cosine Vectorize index; `INCIDENT_MEMORY_NAMESPACE` selects the namespace. Suggested values live in `.dev.vars.example`.
 - Google chat and embedding requests use AI Gateway when configured. Gateway logs expose model-level request status, latency, tokens, and estimated cost where reported.
 - The eight incident tools emit structured start, success, and failure logs with timing. HTTP responses from tools-api also emit request status and duration. Workers tracing is enabled in configuration; dedicated spans for every tool are not explicitly implemented.
 

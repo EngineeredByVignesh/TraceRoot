@@ -7,12 +7,20 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel
 
 
-PROMETHEUS_URL = os.getenv("PROMETHEUS_URL", "http://localhost:9090")
-ALERTMANAGER_URL = os.getenv("ALERTMANAGER_URL", "http://localhost:9093")
-LOKI_URL = os.getenv("LOKI_URL", "http://localhost:3100")
-KUBECONFIG_CONTEXT = os.getenv("KUBECONFIG_CONTEXT", "kind-incident-lab")
-TOOL_API_TOKEN = os.getenv("TOOL_API_TOKEN", "dev-token")
-K8S_NAMESPACE = os.getenv("K8S_NAMESPACE", "incident-lab")
+def require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value or not value.strip():
+        raise RuntimeError(f"Missing required environment variable: {name}")
+    return value
+
+
+PROMETHEUS_URL = require_env("PROMETHEUS_URL")
+ALERTMANAGER_URL = require_env("ALERTMANAGER_URL")
+LOKI_URL = require_env("LOKI_URL")
+KUBECONFIG_CONTEXT = require_env("KUBECONFIG_CONTEXT")
+TOOL_API_TOKEN = require_env("TOOL_API_TOKEN")
+K8S_NAMESPACE = require_env("K8S_NAMESPACE")
+K8S_DEPLOYMENT = require_env("K8S_DEPLOYMENT")
 
 app = FastAPI(title="Incident Investigator Tool API")
 
@@ -23,7 +31,7 @@ class MetricQuery(BaseModel):
 
 
 class LogQuery(BaseModel):
-    query: str = '{namespace="incident-lab", app_kubernetes_io_name="demo-service"}'
+    query: str
     limit: int = 100
     since_seconds: int = 1800
 
@@ -82,7 +90,7 @@ async def get_deployments() -> dict[str, Any]:
         [
             "get",
             "deployment",
-            "demo-service",
+            K8S_DEPLOYMENT,
             "-n",
             K8S_NAMESPACE,
             "-o",
@@ -93,7 +101,7 @@ async def get_deployments() -> dict[str, Any]:
         [
             "rollout",
             "status",
-            "deployment/demo-service",
+            f"deployment/{K8S_DEPLOYMENT}",
             "-n",
             K8S_NAMESPACE,
             "--timeout=5s",
@@ -120,7 +128,7 @@ async def get_deployments() -> dict[str, Any]:
     )
 
     return {
-        "name": "demo-service",
+        "name": K8S_DEPLOYMENT,
         "namespace": K8S_NAMESPACE,
         "image": image,
         "annotations": annotations,

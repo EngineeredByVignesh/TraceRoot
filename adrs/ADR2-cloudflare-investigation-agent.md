@@ -12,13 +12,13 @@ One agent should gather evidence across the lab's systems, test hypotheses, and 
 
 Use Cloudflare agents-starter with Workers, the Agents SDK, and Durable Object state. A local FastAPI tool API exposes Prometheus, Loki, Alertmanager, and Kubernetes evidence.
 
-Default to Gemini through @ai-sdk/google; retain Workers AI via MODEL_PROVIDER=cloudflare. Reports include root cause, evidence, timeline, confidence, and remediation. Use one agent; ADR3-ADR5 cover durable execution, observability, and memory.
+Use Cloudflare Workers AI through workers-ai-provider for model inference, with the model selected by CLOUDFLARE_AI_MODEL. Reports include root cause, evidence, timeline, confidence, and remediation. Use one agent.
 
 ## Consequences
 
 - Tool availability and credentials are operational dependencies.
-- Deployed Workers require an HTTPS route to the local tool API.
 - Missing evidence must be reflected in the report's confidence.
+- Model inference uses Cloudflare credentials and Workers AI quota through the AI binding.
 
 ## Setup
 
@@ -26,23 +26,22 @@ Default to Gemini through @ai-sdk/google; retain Workers AI via MODEL_PROVIDER=c
 2. Copy cloudflare/agents-starter/.dev.vars.example to .dev.vars and configure:
 
 ```env
-TOOL_API_BASE_URL=http://localhost:8788
-TOOL_API_TOKEN=dev-token
-MODEL_PROVIDER=google
-GEMINI_MODEL=gemini-2.5-flash
-GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
+TOOL_API_BASE_URL=<tool-api-url>
+TOOL_API_TOKEN=<matching-tool-api-token>
+MODEL_PROVIDER=cloudflare
+CLOUDFLARE_AI_MODEL=<model-from-env-example>
 ```
 
-3. Run npm run start from cloudflare/agents-starter. Workers AI chat uses MODEL_PROVIDER=cloudflare, CLOUDFLARE_AI_MODEL, and the existing remote AI binding.
-4. For deployment, run npx wrangler login and expose the tool API through Cloudflare Tunnel. Set TOOL_API_BASE_URL to its HTTPS URL in Wrangler vars. Store secrets and deploy:
+3. From cloudflare/agents-starter, run npx wrangler login. Keep the existing AI binding configured for remote inference:
 
-```powershell
-npx wrangler secret put TOOL_API_TOKEN
-npx wrangler secret put GOOGLE_GENERATIVE_AI_API_KEY
-npm run deploy
+```jsonc
+"ai": {
+  "binding": "AI",
+  "remote": true
+}
 ```
 
-Keep non-secret provider settings in wrangler.jsonc vars. Local .dev.vars values are not deployed.
+4. Run npm run start for local development.
 
 ## Verification
 

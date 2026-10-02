@@ -15,13 +15,9 @@ Run IncidentLab first and keep its [observability port-forwards](../IncidentLab/
 Start the tool API:
 
 ```powershell
-$env:TOOL_API_TOKEN="dev-token"
-$env:PROMETHEUS_URL="http://localhost:9090"
-$env:ALERTMANAGER_URL="http://localhost:9093"
-$env:LOKI_URL="http://localhost:3100"
-$env:KUBECONFIG_CONTEXT="kind-incident-lab"
-$env:K8S_NAMESPACE="incident-lab"
-python -m uvicorn tools-api.app.main:app --host 0.0.0.0 --port 8788 --reload
+python -m pip install -r tools-api/requirements.txt
+Copy-Item tools-api/.env.example tools-api/.env
+python -m uvicorn tools-api.app.main:app --env-file tools-api/.env --host 0.0.0.0 --port 8788 --reload
 ```
 
 ## Agent
@@ -29,7 +25,8 @@ python -m uvicorn tools-api.app.main:app --host 0.0.0.0 --port 8788 --reload
 ```powershell
 cd .\cloudflare\agents-starter
 npm install
+Copy-Item .dev.vars.example .dev.vars
 npm run start
 ```
 
-Copy `.dev.vars.example` to `.dev.vars` and fill secrets locally.
+Before starting, edit both local env files with your configuration. Examples are the source of suggested values; the application has no configuration fallbacks. Uncomment settings for the selected provider and optional Gateway. Keep local env files out of Git.

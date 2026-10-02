@@ -1,14 +1,19 @@
+import { requireEnv } from "./config";
+
 async function callToolApi(env: Env, path: string, init?: RequestInit) {
   const startedAt = Date.now();
   const method = init?.method ?? "GET";
-  const response = await fetch(`${env.TOOL_API_BASE_URL}${path}`, {
-    ...init,
-    headers: {
-      "content-type": "application/json",
-      ...init?.headers,
-      authorization: `Bearer ${env.TOOL_API_TOKEN}`
+  const response = await fetch(
+    `${requireEnv(env, "TOOL_API_BASE_URL")}${path}`,
+    {
+      ...init,
+      headers: {
+        "content-type": "application/json",
+        ...init?.headers,
+        authorization: `Bearer ${requireEnv(env, "TOOL_API_TOKEN")}`
+      }
     }
-  });
+  );
 
   console.log(
     JSON.stringify({

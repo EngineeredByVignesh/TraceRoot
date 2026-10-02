@@ -1,10 +1,26 @@
+# Local tool API used by the agent tools.
 TOOL_API_BASE_URL=http://localhost:8788
 TOOL_API_TOKEN=dev-token
+
+# Model provider.
+# Use MODEL_PROVIDER=google for Gemini or MODEL_PROVIDER=cloudflare for Workers AI.
 MODEL_PROVIDER=google
-GEMINI_MODEL=gemini-2.5-flash
+GEMINI_AI_MODEL=gemini-3.5-flash
+# CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
+
+# Incident memory embedding provider.
+# Use EMBEDDING_PROVIDER=google for Gemini embeddings or cloudflare for Workers AI embeddings.
 EMBEDDING_PROVIDER=google
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
-CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
-GOOGLE_GENERATIVE_AI_API_KEY=replace-me
-AI_GATEWAY_BASE_URL=
-AI_GATEWAY_TOKEN=
+# CLOUDFLARE_EMBEDDING_MODEL=@cf/google/embeddinggemma-300m
+
+# Vectorize memory. Dimensions must match the index and selected embedding model.
+EMBEDDING_DIMENSIONS=768
+INCIDENT_MEMORY_NAMESPACE=incident-memory
+
+# Provider credentials.
+GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
+
+# Cloudflare AI Gateway routing for Google model calls.
+# AI_GATEWAY_BASE_URL=
+# AI_GATEWAY_TOKEN=

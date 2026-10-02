@@ -1,4 +1,4 @@
-# ADR5: Incident Memory With Vectorize
+# ADR6: Incident Memory With Vectorize
 
 ## Status
 
@@ -12,7 +12,7 @@ Previous incidents, root causes, and remediations can inform new investigations.
 
 Store embeddings and metadata in Cloudflare Vectorize. Expose rememberIncident for title, summary, root cause, remediation, and labels; expose searchSimilarIncidents for historical context.
 
-Default to Gemini gemini-embedding-001 with 768 dimensions. Select Workers AI @cf/google/embeddinggemma-300m via EMBEDDING_PROVIDER=cloudflare. Use a 768-dimensional cosine index and the incident-memory namespace.
+Select the embedding provider through EMBEDDING_PROVIDER and its model through GEMINI_EMBEDDING_MODEL or CLOUDFLARE_EMBEDDING_MODEL. Configure EMBEDDING_DIMENSIONS to match the Vectorize index and INCIDENT_MEMORY_NAMESPACE for isolation. Suggested values live in .dev.vars.example; there are no code defaults.
 
 ## Consequences
 
@@ -43,16 +43,18 @@ npx wrangler vectorize create incident-memory --dimensions=768 --metric=cosine
 ]
 ```
 
-3. Set these values in .dev.vars locally or Wrangler vars for deployment:
+3. Set these values in .dev.vars locally:
 
 ```env
 EMBEDDING_PROVIDER=google
-GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+GEMINI_EMBEDDING_MODEL=<model-from-env-example>
+EMBEDDING_DIMENSIONS=<dimensions-matching-index>
+INCIDENT_MEMORY_NAMESPACE=<namespace-from-env-example>
 ```
 
-Gemini uses the key from [ADR2](ADR2-cloudflare-investigation-agent.md) and optional gateway settings from [ADR4](ADR4-ai-gateway-observability.md). Workers AI uses the existing remote AI binding.
+Gemini uses the key from [ADR3](ADR3-multiple-model-providers.md) and optional gateway settings from [ADR5](ADR5-ai-gateway-observability.md). Workers AI uses the existing remote AI binding.
 
-4. Run npm run types after binding changes, then npm run start or npm run deploy.
+4. Run npm run types after binding changes, then npm run start.
 
 ## Verification
 

@@ -1,4 +1,4 @@
-# ADR 4: Route LLM Calls Through Cloudflare AI Gateway
+# ADR4: AI Gateway and Agent Observability
 
 ## Status
 
@@ -6,81 +6,47 @@ Accepted
 
 ## Context
 
-The agent can now call Gemini directly through the Google AI API. That works, but direct provider calls give us limited model-level operational visibility from the Cloudflare side.
-
-We want visibility into:
-
-- LLM latency
-- token usage and estimated cost
-- provider/model failures
-- retry behavior
-- model-level request volume
+Investigations need visibility into model latency, token usage, estimated cost, request volume, failures, and tool execution.
 
 ## Decision
 
-Route Gemini calls through Cloudflare AI Gateway when `AI_GATEWAY_BASE_URL` is configured.
+Route Google chat and embeddings through AI Gateway when AI_GATEWAY_BASE_URL is set; otherwise use Google directly. Send cf-aig-authorization when AI_GATEWAY_TOKEN is configured.
 
-The app keeps direct Google API support as the local fallback. This means the same code can run before AI Gateway is configured, then gain observability by setting Gateway config only.
-
-The active Gemini provider remains `@ai-sdk/google`; only the provider base URL and optional Cloudflare AI Gateway auth header change.
+Enable Workers observability and traces. Emit agent.tool.start, agent.tool.success, agent.tool.failure, and tool_api.request events for execution and timing.
 
 ## Consequences
 
-- Cloudflare AI Gateway becomes the LLM observability layer.
-- The app can inspect latency, errors, token usage, and costs in the AI Gateway dashboard.
-- Direct Google API calls remain available by leaving `AI_GATEWAY_BASE_URL` empty.
-- Cloudflare Workers AI remains disabled by config but still available with `MODEL_PROVIDER=cloudflare`.
+- Gateway analytics cover model requests; usage and estimated cost depend on provider reporting.
+- Tool telemetry appears in Worker logs, not Gateway model analytics.
+- Tracing configuration alone does not guarantee a span for every tool call.
+- Retry behavior follows configured SDK or gateway policies.
 
-## Upstream Setup Guide
+## Setup
 
-Create an AI Gateway in Cloudflare:
-
-1. Open the Cloudflare dashboard.
-2. Go to `AI` > `AI Gateway`.
-3. Create a Gateway, for example `traceroot`.
-4. Copy your Cloudflare Account ID.
-5. Build the Google AI Studio provider-native base URL:
-
-```text
-https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_name>/google-ai-studio/v1
-```
-
-Set the local agent config:
+1. Create an AI Gateway in the Cloudflare dashboard; copy its account ID and gateway name.
+2. Set these values in cloudflare/agents-starter/.dev.vars:
 
 ```env
 AI_GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/<account_id>/<gateway_name>/google-ai-studio/v1
-AI_GATEWAY_TOKEN=<optional-cloudflare-ai-gateway-token>
+AI_GATEWAY_TOKEN=<gateway-token>
 ```
 
-Keep the Google key configured because Cloudflare AI Gateway forwards to Google AI Studio:
+3. Keep the Google key from [ADR2](ADR2-cloudflare-investigation-agent.md). If gateway authentication is enabled, supply an authorized token without a Bearer prefix; otherwise the token may be omitted.
+4. For deployment, set the base URL in Wrangler vars and run npx wrangler secret put AI_GATEWAY_TOKEN from the agent directory when authentication is enabled.
+5. Keep the existing configuration and deploy:
 
-```env
-GOOGLE_GENERATIVE_AI_API_KEY=<your-google-api-key>
+```jsonc
+"observability": {
+  "enabled": true,
+  "traces": { "enabled": true }
+}
 ```
 
-For local development, add the values to:
+## Verification
 
-```text
-cloudflare/agents-starter/.dev.vars
-```
+Send a model request and inspect its model, duration, usage, and status in Gateway logs. Trigger a tool call and inspect Worker events; failed calls should emit agent.tool.failure.
 
-For deployed Workers, store the token as a secret if you use one:
+## References
 
-```powershell
-cd .\cloudflare\agents-starter
-npx wrangler secret put AI_GATEWAY_TOKEN
-```
-
-Set `AI_GATEWAY_BASE_URL` as a normal Wrangler var in `wrangler.jsonc` or through your deployment environment.
-
-Verification:
-
-1. Start the agent.
-2. Ask any question that requires the model.
-3. Open the AI Gateway dashboard.
-4. Confirm the request appears under the Gateway logs/analytics.
-
-References:
-
-- Cloudflare AI Gateway Google AI Studio provider endpoint: `https://developers.cloudflare.com/ai-gateway/usage/providers/google-ai-studio/`
-- Cloudflare AI Gateway getting started: `https://developers.cloudflare.com/ai-gateway/get-started/`
+- [Google AI Studio gateway endpoint](https://developers.cloudflare.com/ai-gateway/usage/providers/google-ai-studio/)
+- [Gateway authentication](https://developers.cloudflare.com/ai-gateway/configuration/authentication/)

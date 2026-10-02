@@ -1,4 +1,4 @@
-# ADR 5: Use Vectorize For Incident Memory
+# ADR5: Incident Memory With Vectorize
 
 ## Status
 
@@ -6,128 +6,61 @@ Accepted
 
 ## Context
 
-The agent can investigate the live incident lab, but every investigation starts from scratch. Real incident response improves when prior incidents, symptoms, root causes, and remediations can be reused.
-
-We want the agent to answer:
-
-- "Have we seen something similar before?"
-- "What was the previous root cause?"
-- "What remediation worked last time?"
+Previous incidents, root causes, and remediations can inform new investigations.
 
 ## Decision
 
-Use Cloudflare Vectorize as the incident memory store.
+Store embeddings and metadata in Cloudflare Vectorize. Expose rememberIncident for title, summary, root cause, remediation, and labels; expose searchSimilarIncidents for historical context.
 
-Incident/RCA summaries are embedded with Workers AI and stored in a Vectorize index. During future investigations, the agent can embed the current symptoms and retrieve similar previous incidents as context.
+Default to Gemini gemini-embedding-001 with 768 dimensions. Select Workers AI @cf/google/embeddinggemma-300m via EMBEDDING_PROVIDER=cloudflare. Use a 768-dimensional cosine index and the incident-memory namespace.
 
-The first implementation exposes two tools:
+## Consequences
 
-- `rememberIncident`: store an incident summary, root cause, remediation, and optional labels.
-- `searchSimilarIncidents`: retrieve semantically similar prior incidents.
+- Historical matches provide context, not proof of the current root cause.
+- Writes are asynchronous; mutation submission does not mean immediate search visibility.
+- Gemini consumes Google quota instead of Workers AI embedding quota.
+- Embedding models use incompatible vector spaces even at the same dimension. Re-embed stored incidents or use a separate index when changing provider/model.
+- Local development reads and writes the remote index.
 
-Embeddings default to Google Gemini:
+## Setup
 
-```text
-gemini-embedding-001
+1. From cloudflare/agents-starter, log in and create the index once:
+
+```powershell
+npx wrangler login
+npx wrangler vectorize create incident-memory --dimensions=768 --metric=cosine
 ```
 
-The embedding provider is feature-flagged:
+2. Keep one binding with the name expected by the code:
+
+```jsonc
+"vectorize": [
+  {
+    "binding": "INCIDENT_MEMORY",
+    "index_name": "incident-memory",
+    "remote": true
+  }
+]
+```
+
+3. Set these values in .dev.vars locally or Wrangler vars for deployment:
 
 ```env
 EMBEDDING_PROVIDER=google
 GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 ```
 
-Cloudflare Workers AI embeddings remain available with:
+Gemini uses the key from [ADR2](ADR2-cloudflare-investigation-agent.md) and optional gateway settings from [ADR4](ADR4-ai-gateway-observability.md). Workers AI uses the existing remote AI binding.
 
-```env
-EMBEDDING_PROVIDER=cloudflare
-```
+4. Run npm run types after binding changes, then npm run start or npm run deploy.
 
-The Workers AI fallback model is:
+## Verification
 
-```text
-@cf/google/embeddinggemma-300m
-```
+Ask: "Remember this incident: demo-service returned 5xx after a bad deployment. Root cause: FAILURE_MODE=bad_deploy. Remediation: roll back to v1. Labels: demo-service, bad-deploy, 5xx."
 
-This model produces 768-dimensional embeddings, so the Vectorize index uses:
+After indexing completes, ask: "Have we seen demo-service returning 5xx after a rollout?" Confirm the saved ID and metadata in the tool result.
 
-```text
-dimensions = 768
-metric = cosine
-```
+## References
 
-## Consequences
-
-- Historical incidents become searchable from the agent.
-- Similar prior RCAs can be used as investigation context.
-- Gemini embeddings are used by default to avoid consuming Workers AI embedding budget.
-- Workers AI remains available as a feature-flagged fallback.
-- Vectorize mutation visibility is eventually consistent, so a freshly stored incident may take a short time to appear in search results.
-
-## Upstream Setup Guide
-
-Create the Vectorize index:
-
-```powershell
-cd .\cloudflare\agents-starter
-npx wrangler vectorize create incident-memory --dimensions=768 --metric=cosine
-```
-
-Bind it in `wrangler.jsonc`:
-
-```jsonc
-"vectorize": [
-  {
-    "binding": "INCIDENT_MEMORY",
-    "index_name": "incident-memory"
-  }
-]
-```
-
-Regenerate Worker types after changing the binding:
-
-```powershell
-npm run types
-```
-
-No new secret is required when Gemini chat is already configured. Gemini embeddings use the existing Google API key and optional AI Gateway route:
-
-```env
-GOOGLE_GENERATIVE_AI_API_KEY=<your-google-api-key>
-AI_GATEWAY_BASE_URL=<optional-ai-gateway-google-ai-studio-base-url>
-AI_GATEWAY_TOKEN=<optional-ai-gateway-token>
-```
-
-The Cloudflare fallback uses the existing Workers AI binding:
-
-```jsonc
-"ai": {
-  "binding": "AI",
-  "remote": true
-}
-```
-
-For local development, Wrangler uses the configured remote Vectorize index. You must be logged in:
-
-```powershell
-npx wrangler login
-```
-
-Verification prompt:
-
-```text
-Remember this incident: demo-service had a bad deployment causing 5xx responses. Root cause: FAILURE_MODE=bad_deploy. Remediation: roll back to v1. Tags: demo-service, bad-deploy, 5xx.
-```
-
-Then ask:
-
-```text
-Have we seen something similar to demo-service returning 5xx after a rollout?
-```
-
-References:
-
-- Cloudflare Vectorize intro: `https://developers.cloudflare.com/vectorize/get-started/intro/`
-- Cloudflare Vectorize Workers API: `https://developers.cloudflare.com/vectorize/reference/client-api/`
-- Cloudflare Workers AI EmbeddingGemma model: `https://developers.cloudflare.com/workers-ai/models/embeddinggemma-300m/`
+- [Vectorize setup](https://developers.cloudflare.com/vectorize/get-started/intro/)
+- [Vectorize Workers API](https://developers.cloudflare.com/vectorize/reference/client-api/)

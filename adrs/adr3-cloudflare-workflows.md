@@ -1,4 +1,4 @@
-# ADR 3: Use Cloudflare Workflows For Durable Investigations
+# ADR3: Durable Investigations With Cloudflare Workflows
 
 ## Status
 
@@ -6,41 +6,23 @@ Accepted
 
 ## Context
 
-Incident investigations can take longer than a single chat turn or Worker request. Tool calls to Prometheus, Loki, Alertmanager, and Kubernetes can fail transiently, especially while the local lab is starting, port-forwards are reconnecting, or Cloudflare Tunnel is being restarted.
-
-We want another meaningful Cloudflare primitive in the architecture without adding a separate orchestration system.
+Evidence collection can outlast a chat request or encounter transient tool API failures.
 
 ## Decision
 
-Use Cloudflare Workflows for durable investigation runs.
+Use Cloudflare Workflows to collect deployment metadata, alerts, 5xx error rate, p95 latency, and recent logs. Each persisted step has three retries, exponential backoff starting at ten seconds, and a two-minute timeout.
 
-The first Workflow will collect an evidence bundle for `demo-service`:
-
-- deployment metadata
-- current Alertmanager alerts
-- Prometheus error-rate signal
-- Prometheus p95 latency signal
-- recent Loki logs
-
-Each external evidence call runs as its own Workflow step with retry configuration. Completed steps are persisted by Cloudflare Workflows, so a resumed run does not redo already completed work.
-
-The Cloudflare Agent will expose tools to:
-
-- start a durable investigation Workflow
-- fetch a Workflow instance status by ID
-
-The normal chat tools remain available for quick interactive questions.
+Agent tools start investigations and inspect instance status. The workflow returns an evidence bundle; RCA generation remains in the agent.
 
 ## Consequences
 
-- Long-running investigations become resumable.
-- Transient tool API failures can be retried by Workflow step policy.
-- Investigation state is inspectable through Cloudflare Workflow instance status.
-- The first implementation returns an evidence bundle; full LLM report generation inside the Workflow can be added later if needed.
+- Completed steps survive interruptions and are reused during recovery.
+- Persistent failures can exhaust retries and fail the run.
+- Sequential collection is not an atomic snapshot.
 
-## Upstream Setup Guide
+## Setup
 
-Cloudflare Workflows are configured in `cloudflare/agents-starter/wrangler.jsonc` with:
+Keep the existing wrangler.jsonc binding:
 
 ```jsonc
 "workflows": [
@@ -52,43 +34,10 @@ Cloudflare Workflows are configured in `cloudflare/agents-starter/wrangler.jsonc
 ]
 ```
 
-After changing Workflow bindings, regenerate Worker types:
+Use the configuration in [ADR2](ADR2-cloudflare-investigation-agent.md). No extra workflow secret or manual dashboard creation is required.
 
-```powershell
-cd .\cloudflare\agents-starter
-npm run types
-```
+From cloudflare/agents-starter, run npm run types after binding changes. Run npm run start locally or npm run deploy to provision the deployed workflow.
 
-For local development:
+## Verification
 
-```powershell
-cd .\cloudflare\agents-starter
-npm run start
-```
-
-For deployment:
-
-```powershell
-cd .\cloudflare\agents-starter
-npm run deploy
-```
-
-Required secrets and vars are unchanged from the agent setup:
-
-```env
-TOOL_API_BASE_URL=http://localhost:8788
-TOOL_API_TOKEN=dev-token
-MODEL_PROVIDER=google
-GEMINI_MODEL=gemini-2.5-flash
-CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
-GOOGLE_GENERATIVE_AI_API_KEY=<your-google-api-key>
-```
-
-For deployed Workers, store sensitive values as Wrangler secrets:
-
-```powershell
-npx wrangler secret put TOOL_API_TOKEN
-npx wrangler secret put GOOGLE_GENERATIVE_AI_API_KEY
-```
-
-If the tool API is still local, expose it with Cloudflare Tunnel and set `TOOL_API_BASE_URL` to the tunnel HTTPS URL.
+Start a durable investigation through the agent and check its returned instance ID until completion. Confirm all five evidence sources appear.

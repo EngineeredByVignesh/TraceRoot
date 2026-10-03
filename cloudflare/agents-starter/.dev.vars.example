@@ -10,6 +10,13 @@ GEMINI_AI_MODEL=gemini-3.5-flash
 # OPENROUTER_AI_MODEL=<provider/model-id>
 # OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
+# Optional alert classification override. Leave the model unset to reuse the chat model.
+# Provider: google, cloudflare, or openrouter. External providers require the separate key.
+# Cloudflare uses the AI binding, not an API key. Existing provider routing settings apply.
+# CLASSIFICATION_AI_MODEL=<model-id>
+# CLASSIFICATION_MODEL_PROVIDER=google
+# CLASSIFICATION_MODEL_PROVIDER_API_KEY=<classification-provider-api-key>
+
 # Incident memory embedding provider.
 # Use EMBEDDING_PROVIDER=google for Gemini embeddings or cloudflare for Workers AI embeddings.
 EMBEDDING_PROVIDER=google

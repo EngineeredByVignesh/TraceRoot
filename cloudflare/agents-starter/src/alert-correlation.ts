@@ -1,6 +1,6 @@
 import { generateObject } from "ai";
 import { z } from "zod";
-import { createChatModel } from "./model-provider";
+import { createClassificationModel } from "./model-provider";
 import type { AlertNotification } from "./alert-webhook";
 import type { InvestigationProgress } from "./investigation-progress";
 
@@ -18,7 +18,7 @@ export async function correlateAlert(
   active: InvestigationProgress[]
 ): Promise<AlertCorrelation> {
   const { object } = await generateObject({
-    model: createChatModel(env, alert.fingerprint),
+    model: createClassificationModel(env, alert.fingerprint),
     schema: correlationSchema,
     abortSignal: AbortSignal.timeout(15000),
     maxRetries: 0,

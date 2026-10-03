@@ -43,6 +43,101 @@ const alert = {
   labels: { alertname: "DemoServiceHighErrorRate" },
   annotations: { summary: "5xx errors" }
 };
+test("classification model overrides are optional and provider-specific", async () => {
+  const moduleUrl = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const factory = (name, provider) =>
+    moduleUrl(
+      `export const ${name} = (options) => (model, settings) => ({ provider: '${provider}', options, model, settings });`
+    );
+  const { createClassificationModel, createChatModel } = await import(
+    await loadSource("../src/model-provider.ts", {
+      "@ai-sdk/google": factory("createGoogleGenerativeAI", "google"),
+      "@openrouter/ai-sdk-provider": factory("createOpenRouter", "openrouter"),
+      "workers-ai-provider": factory("createWorkersAI", "cloudflare")
+    })
+  );
+  const env = {
+    MODEL_PROVIDER: "google",
+    GEMINI_AI_MODEL: "chat",
+    GOOGLE_GENERATIVE_AI_API_KEY: "chat-key",
+    OPENROUTER_BASE_URL: "https://example.test/v1",
+    AI: {}
+  };
+  for (const model of [undefined, "", "  "]) {
+    assert.deepEqual(
+      createClassificationModel(
+        {
+          ...env,
+          CLASSIFICATION_AI_MODEL: model,
+          CLASSIFICATION_MODEL_PROVIDER: "invalid"
+        },
+        "session"
+      ),
+      createChatModel(env, "session")
+    );
+  }
+  for (const provider of ["google", "openrouter", "cloudflare"]) {
+    const selected = createClassificationModel(
+      {
+        ...env,
+        CLASSIFICATION_AI_MODEL: "classifier",
+        CLASSIFICATION_MODEL_PROVIDER: provider,
+        CLASSIFICATION_MODEL_PROVIDER_API_KEY: "classifier-key"
+      },
+      "session"
+    );
+    assert.equal(selected.provider, provider);
+    assert.equal(selected.model, "classifier");
+    if (provider !== "cloudflare")
+      assert.equal(selected.options.apiKey, "classifier-key");
+    else assert.equal(selected.options.binding, env.AI);
+  }
+  assert.equal(createChatModel(env, "session").model, "chat");
+  assert.throws(
+    () =>
+      createClassificationModel(
+        { ...env, CLASSIFICATION_AI_MODEL: "classifier" },
+        "s"
+      ),
+    /CLASSIFICATION_MODEL_PROVIDER/
+  );
+  assert.throws(
+    () =>
+      createClassificationModel(
+        {
+          ...env,
+          CLASSIFICATION_AI_MODEL: "classifier",
+          CLASSIFICATION_MODEL_PROVIDER: "google"
+        },
+        "s"
+      ),
+    /CLASSIFICATION_MODEL_PROVIDER_API_KEY/
+  );
+  assert.throws(
+    () =>
+      createClassificationModel(
+        {
+          ...env,
+          CLASSIFICATION_AI_MODEL: "classifier",
+          CLASSIFICATION_MODEL_PROVIDER: "invalid"
+        },
+        "s"
+      ),
+    /MODEL_PROVIDER must be/
+  );
+  assert.equal(
+    createClassificationModel(
+      {
+        ...env,
+        CLASSIFICATION_AI_MODEL: "classifier",
+        CLASSIFICATION_MODEL_PROVIDER: "cloudflare"
+      },
+      "s"
+    ).provider,
+    "cloudflare"
+  );
+});
 test("alert admission correlates active incidents, deduplicates retries, and fails open", async () => {
   const moduleUrl = (source) =>
     `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
@@ -50,7 +145,9 @@ test("alert admission correlates active incidents, deduplicates retries, and fai
     ai: moduleUrl(
       "export const generateObject = async () => { globalThis.correlationTest.calls++; if (globalThis.correlationTest.error) throw new Error('unavailable'); return {object: globalThis.correlationTest.result}; };"
     ),
-    "./model-provider": moduleUrl("export const createChatModel = () => ({});")
+    "./model-provider": moduleUrl(
+      "export const createClassificationModel = () => ({});"
+    )
   });
   const { admitAlert } = await import(
     await loadSource("../src/alert-admission.ts", {

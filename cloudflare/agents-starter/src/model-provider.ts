@@ -3,6 +3,38 @@ import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createWorkersAI } from "workers-ai-provider";
 import { requireEnv, requireProvider } from "./config";
 
+export function createClassificationModel(env: Env, sessionAffinity: string) {
+  if (!env.CLASSIFICATION_AI_MODEL?.trim()) {
+    return createChatModel(env, sessionAffinity);
+  }
+  const provider = requireProvider(
+    {
+      ...env,
+      MODEL_PROVIDER: requireEnv(env, "CLASSIFICATION_MODEL_PROVIDER")
+    },
+    "MODEL_PROVIDER"
+  );
+  const model = requireEnv(env, "CLASSIFICATION_AI_MODEL");
+  const apiKey =
+    provider === "cloudflare"
+      ? undefined
+      : requireEnv(env, "CLASSIFICATION_MODEL_PROVIDER_API_KEY");
+  return createChatModel(
+    {
+      ...env,
+      MODEL_PROVIDER: provider,
+      ...(provider === "google"
+        ? { GEMINI_AI_MODEL: model, GOOGLE_GENERATIVE_AI_API_KEY: apiKey! }
+        : {}),
+      ...(provider === "openrouter"
+        ? { OPENROUTER_AI_MODEL: model, OPENROUTER_API_KEY: apiKey! }
+        : {}),
+      ...(provider === "cloudflare" ? { CLOUDFLARE_AI_MODEL: model } : {})
+    },
+    sessionAffinity
+  );
+}
+
 export function createChatModel(env: Env, sessionAffinity: string) {
   switch (requireProvider(env, "MODEL_PROVIDER")) {
     case "cloudflare":

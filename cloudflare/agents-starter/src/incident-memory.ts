@@ -1,6 +1,7 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { embed } from "ai";
 import { requireEnv, requireProvider } from "./config";
+import { gatewaySettings } from "./ai-gateway";
 
 type EmbeddingOutput = {
   data: number[][];
@@ -25,6 +26,7 @@ function buildMemoryText(input: IncidentMemoryInput) {
 }
 
 async function embedText(env: Env, text: string) {
+  const gateway = gatewaySettings(env);
   const embeddingProvider = requireProvider(env, "EMBEDDING_PROVIDER");
   const dimensions = Number(requireEnv(env, "EMBEDDING_DIMENSIONS"));
   if (!Number.isSafeInteger(dimensions) || dimensions <= 0) {
@@ -34,12 +36,8 @@ async function embedText(env: Env, text: string) {
   if (embeddingProvider !== "cloudflare") {
     const google = createGoogleGenerativeAI({
       apiKey: requireEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY"),
-      baseURL: env.AI_GATEWAY_BASE_URL || undefined,
-      headers: env.AI_GATEWAY_TOKEN
-        ? {
-            "cf-aig-authorization": `Bearer ${env.AI_GATEWAY_TOKEN}`,
-          }
-        : undefined,
+      baseURL: gateway ? `${gateway.baseURL}/google-ai-studio/v1` : undefined,
+      headers: gateway?.headers,
     });
 
     const result = await embed({
@@ -61,6 +59,7 @@ async function embedText(env: Env, text: string) {
     {
       text,
     },
+    gateway ? { gateway: { id: gateway.id } } : undefined,
   )) as EmbeddingOutput;
 
   const [embedding] = output.data;

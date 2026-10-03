@@ -25,7 +25,9 @@ async function loadSource(path, overrides = {}) {
         ? await loadSource("../src/investigation-progress.ts")
         : name === "./config"
           ? await loadSource("../src/config.ts")
-          : import.meta.resolve(name));
+          : name === "./ai-gateway"
+            ? await loadSource("../src/ai-gateway.ts")
+            : import.meta.resolve(name));
     resolved = resolved.replaceAll(`from "${name}"`, `from "${url}"`);
   }
   return `data:text/javascript;base64,${Buffer.from(resolved).toString("base64")}`;
@@ -94,6 +96,123 @@ test("classification model overrides are optional and provider-specific", async 
     else assert.equal(selected.options.binding, env.AI);
   }
   assert.equal(createChatModel(env, "session").model, "chat");
+  const gatewayRoot =
+    "https://gateway.ai.cloudflare.com/v1/account/shared-gateway";
+  const gatewayEnv = {
+    ...env,
+    AI_GATEWAY_BASE_URL: gatewayRoot,
+    AI_GATEWAY_TOKEN: "gateway-token"
+  };
+  const allProviders = {
+    ...gatewayEnv,
+    GEMINI_AI_MODEL: "google-model",
+    GOOGLE_GENERATIVE_AI_API_KEY: "google-key",
+    CLOUDFLARE_AI_MODEL: "cloudflare-model",
+    OPENROUTER_AI_MODEL: "openrouter-model",
+    OPENROUTER_API_KEY: "openrouter-key",
+    OPENROUTER_BASE_URL: "https://example.test/direct"
+  };
+  for (const provider of ["google", "cloudflare", "openrouter"]) {
+    const selected = createChatModel(
+      { ...allProviders, MODEL_PROVIDER: provider },
+      "session"
+    );
+    assert.equal(selected.provider, provider);
+    assert.equal(selected.model, `${provider}-model`);
+    if (provider === "cloudflare") {
+      assert.deepEqual(selected.options.gateway, { id: "shared-gateway" });
+    } else {
+      assert.equal(selected.options.apiKey, `${provider}-key`);
+      assert.equal(
+        selected.options.baseURL,
+        `${gatewayRoot}/${provider === "google" ? "google-ai-studio/v1" : "openrouter"}`
+      );
+    }
+  }
+  assert.equal(allProviders.MODEL_PROVIDER, "google");
+  const google = createChatModel(gatewayEnv, "session");
+  assert.equal(google.options.baseURL, `${gatewayRoot}/google-ai-studio/v1`);
+  assert.equal(
+    google.options.headers["cf-aig-authorization"],
+    "Bearer gateway-token"
+  );
+  const openrouter = createChatModel(
+    {
+      ...gatewayEnv,
+      MODEL_PROVIDER: "openrouter",
+      OPENROUTER_API_KEY: "router-key",
+      OPENROUTER_AI_MODEL: "router-model",
+      OPENROUTER_BASE_URL: undefined
+    },
+    "session"
+  );
+  assert.equal(openrouter.options.baseURL, `${gatewayRoot}/openrouter`);
+  assert.equal(openrouter.options.apiKey, "router-key");
+  assert.equal(
+    openrouter.options.headers["cf-aig-authorization"],
+    "Bearer gateway-token"
+  );
+  const workers = createChatModel(
+    {
+      ...gatewayEnv,
+      MODEL_PROVIDER: "cloudflare",
+      CLOUDFLARE_AI_MODEL: "workers-model"
+    },
+    "session"
+  );
+  assert.deepEqual(workers.options.gateway, { id: "shared-gateway" });
+  assert.equal(workers.options.binding, env.AI);
+  assert.equal(
+    createChatModel(
+      {
+        ...env,
+        MODEL_PROVIDER: "openrouter",
+        OPENROUTER_API_KEY: "key",
+        OPENROUTER_AI_MODEL: "model"
+      },
+      "session"
+    ).options.baseURL,
+    env.OPENROUTER_BASE_URL
+  );
+  assert.equal(
+    createChatModel({ ...env, AI_GATEWAY_TOKEN: "unused" }, "session").options
+      .headers,
+    undefined
+  );
+  assert.equal(
+    createChatModel(
+      {
+        ...gatewayEnv,
+        AI_GATEWAY_BASE_URL: `${gatewayRoot}/google-ai-studio/v1/`
+      },
+      "session"
+    ).options.baseURL,
+    google.options.baseURL
+  );
+  assert.equal(
+    createClassificationModel(
+      {
+        ...gatewayEnv,
+        CLASSIFICATION_AI_MODEL: "classifier",
+        CLASSIFICATION_MODEL_PROVIDER: "openrouter",
+        CLASSIFICATION_MODEL_PROVIDER_API_KEY: "classifier-key"
+      },
+      "session"
+    ).options.baseURL,
+    `${gatewayRoot}/openrouter`
+  );
+  assert.throws(
+    () =>
+      createChatModel(
+        {
+          ...env,
+          AI_GATEWAY_BASE_URL:
+            "https://api.cloudflare.com/client/v4/accounts/account/ai/run"
+        },
+        "session"
+      ),
+    /AI_GATEWAY_BASE_URL/
+  );
   assert.throws(
     () =>
       createClassificationModel(

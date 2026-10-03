@@ -24,14 +24,14 @@ Provider selection occurs for each chat response. Adding a provider requires an 
 
 - All chat providers share the same tools and investigation flow; select models supporting streaming and tool calling.
 - Access requirements, quota, pricing, and model capabilities differ. There is no automatic application failover.
-- OpenRouter chat uses its configured endpoint directly. Optional Google AI Gateway routing remains covered by [ADR5](ADR5-ai-gateway-observability.md).
+- All providers support the shared optional AI Gateway configuration in [ADR5](ADR5-ai-gateway-observability.md). OpenRouter requires its direct base URL only when Gateway routing is disabled.
 - Embeddings remain independently configured through Google or Cloudflare; selecting OpenRouter chat does not change incident memory. See [ADR6](ADR6-vectorize-incident-memory.md).
 - Pin the OpenRouter adapter to a release compatible with the application's AI SDK major version.
 
 ## Setup
 
 1. Complete the local setup in the [TraceRoot runbook](../README.md). Edit `cloudflare/agents-starter/.dev.vars` using `.dev.vars.example` as the configuration reference.
-2. Set `MODEL_PROVIDER` and uncomment/fill its model and credential settings. Comment out unused provider settings, except credentials needed by the selected embedding provider.
+2. Set `MODEL_PROVIDER` and uncomment/fill its model and credential settings. For one-switch operation, configure every provider you plan to use once and leave those settings present; inactive chat provider settings are ignored. Thereafter change only `MODEL_PROVIDER` and restart the agent. The shared Gateway root automatically supplies the selected provider's route. Embeddings and explicit classification overrides remain independent.
 3. For Cloudflare, run `npx wrangler login` from the agent directory and retain the remote `AI` binding described in [ADR2](ADR2-cloudflare-investigation-agent.md).
 4. For Google, create a key in [Google AI Studio](https://aistudio.google.com/apikey) with access to the selected model.
 5. For OpenRouter, create a key in [OpenRouter Settings](https://openrouter.ai/settings/keys), ensure sufficient credits/access, and choose a model supporting tools from the [model catalog](https://openrouter.ai/models). Set `MODEL_PROVIDER=openrouter`, fill `OPENROUTER_API_KEY` and `OPENROUTER_AI_MODEL` with the catalog's full model ID, and uncomment `OPENROUTER_BASE_URL` from the example.

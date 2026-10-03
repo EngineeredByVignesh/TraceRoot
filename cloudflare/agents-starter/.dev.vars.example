@@ -3,7 +3,9 @@ TOOL_API_BASE_URL=http://localhost:8788
 TOOL_API_TOKEN=dev-token
 
 # Model provider.
-# MODEL_PROVIDER: google, cloudflare, or openrouter. Uncomment the selected model.
+# MODEL_PROVIDER is the selector: google, cloudflare, or openrouter.
+# For one-switch operation, uncomment/fill all provider models and credentials once.
+# Inactive provider settings are ignored; otherwise keep unused settings commented out.
 MODEL_PROVIDER=google
 GEMINI_AI_MODEL=gemini-3.5-flash
 # CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
@@ -31,8 +33,10 @@ INCIDENT_MEMORY_NAMESPACE=incident-memory
 GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
 # OPENROUTER_API_KEY=<openrouter-api-key>
 
-# Cloudflare AI Gateway routing for Google model calls.
-# AI_GATEWAY_BASE_URL=
+# Cloudflare AI Gateway for all chat/classification providers and Google/Cloudflare embeddings.
+# Use the shared root; provider endpoints are derived automatically.
+# Workers AI uses the existing binding and the gateway ID from this URL (same account required).
+# AI_GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/<account-id>/<gateway-id>
 # AI_GATEWAY_TOKEN=
 
 # Optional automatic Alertmanager investigations. Uncomment all settings to enable.

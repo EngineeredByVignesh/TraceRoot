@@ -32,7 +32,9 @@ async function loadSource(path, overrides = {}) {
 }
 
 const { handleAlertWebhook, alertWorkflowId } = await import(
-  await loadSource("../src/alert-webhook.ts")
+  await loadSource("../src/alert-webhook.ts", {
+    agents: `data:text/javascript,export const getAgentByName = async (binding) => binding;`
+  })
 );
 const alert = {
   status: "firing",
@@ -41,6 +43,105 @@ const alert = {
   labels: { alertname: "DemoServiceHighErrorRate" },
   annotations: { summary: "5xx errors" }
 };
+test("alert admission correlates active incidents, deduplicates retries, and fails open", async () => {
+  const moduleUrl = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const correlationUrl = await loadSource("../src/alert-correlation.ts", {
+    ai: moduleUrl(
+      "export const generateObject = async () => { globalThis.correlationTest.calls++; if (globalThis.correlationTest.error) throw new Error('unavailable'); return {object: globalThis.correlationTest.result}; };"
+    ),
+    "./model-provider": moduleUrl("export const createChatModel = () => ({});")
+  });
+  const { admitAlert } = await import(
+    await loadSource("../src/alert-admission.ts", {
+      "./alert-correlation": correlationUrl,
+      "./alert-webhook": moduleUrl(
+        "export const alertWorkflowId = async (alert) => alert.fingerprint;"
+      )
+    })
+  );
+  globalThis.correlationTest = {
+    calls: 0,
+    result: {
+      correlated: true,
+      investigationId: "active",
+      confidence: 0.95,
+      reason: "Same deployment"
+    }
+  };
+  let items = [];
+  let creates = 0;
+  const saved = new Map();
+  const context = {
+    env: {
+      INVESTIGATION_WORKFLOW: {
+        createBatch: async () => {
+          creates++;
+          return [{}];
+        }
+      }
+    },
+    agentName: "default",
+    sinceSeconds: 1800,
+    getInvestigations: async () => items,
+    update: (item) => {
+      items = [item, ...items.filter((other) => other.id !== item.id)];
+    },
+    find: (id) => saved.get(id),
+    save: (id, investigationId, correlation) =>
+      saved.set(id, { investigationId, correlation })
+  };
+  try {
+    await admitAlert(context, { ...alert, fingerprint: "first" });
+    assert.equal(creates, 1);
+    assert.equal(globalThis.correlationTest.calls, 0);
+    items = [{ ...items[0], id: "active" }];
+    const matched = await admitAlert(context, alert);
+    assert.equal(matched.investigationId, "active");
+    assert.equal(creates, 1);
+    assert.equal(items[0].alerts.length, 2);
+    items[0].status = "complete";
+    await admitAlert(context, alert);
+    assert.equal(creates, 1);
+    assert.equal(globalThis.correlationTest.calls, 1);
+    items[0].status = "running";
+    for (const result of [
+      {
+        correlated: false,
+        investigationId: null,
+        confidence: 0.2,
+        reason: "Unrelated"
+      },
+      {
+        correlated: true,
+        investigationId: "invented",
+        confidence: 0.9,
+        reason: "Invalid"
+      },
+      {
+        correlated: true,
+        investigationId: "active",
+        confidence: 2,
+        reason: "Invalid confidence"
+      }
+    ]) {
+      globalThis.correlationTest.result = result;
+      const admitted = await admitAlert(context, {
+        ...alert,
+        fingerprint: `new-${creates}`
+      });
+      assert.equal(admitted.created, 1);
+    }
+    globalThis.correlationTest.error = true;
+    assert.equal(
+      (await admitAlert(context, { ...alert, fingerprint: "failure" })).created,
+      1
+    );
+    assert.equal(creates, 5);
+  } finally {
+    delete globalThis.correlationTest;
+  }
+});
 function fixture() {
   const instances = new Map();
   let calls = 0;
@@ -70,6 +171,26 @@ function fixture() {
           }
         };
       }
+    }
+  };
+  env.ChatAgent = {
+    async acceptAlerts(alerts, sinceSeconds, agentName) {
+      const entries = await Promise.all(
+        alerts.map(async (alert) => ({
+          id: await alertWorkflowId(alert),
+          params: {
+            alert,
+            sinceSeconds,
+            agentName,
+            question: `Investigate firing alert ${alert.labels.alertname}.`
+          }
+        }))
+      );
+      const created = await env.INVESTIGATION_WORKFLOW.createBatch(entries);
+      return {
+        created: created.length,
+        workflows: [...new Set(entries.map((entry) => entry.id))]
+      };
     }
   };
   return { env, instances, calls: () => calls };
@@ -321,7 +442,7 @@ test("automatic Workflow retries model failure and publishes a report; manual mo
       "export const streamText = () => { if (++globalThis.alertWorkflowTest.modelCalls === 1) throw new Error('temporary model failure'); const text = 'Likely bad deployment; evidence: image v2 and 500 errors.'; return { text: Promise.resolve(text), textStream: (async function* () { yield text; })() }; };"
     ),
     agents: moduleUrl(
-      "export const getAgentByName = async () => ({updateInvestigation: async (progress) => { globalThis.alertWorkflowTest.progress.push(progress); }, recordAlertReport: async (id, report) => { globalThis.alertWorkflowTest.published.push({id, report}); }});"
+      "export const getAgentByName = async () => ({getInvestigations: async () => [], updateInvestigation: async (progress) => { globalThis.alertWorkflowTest.progress.push(progress); }, recordAlertReport: async (id, report) => { globalThis.alertWorkflowTest.published.push({id, report}); }});"
     )
   };
   const { InvestigationWorkflow } = await import(

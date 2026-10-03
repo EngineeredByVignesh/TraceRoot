@@ -174,6 +174,14 @@ export class InvestigationWorkflow extends WorkflowEntrypoint<
       "generate alert investigation report",
       "RCA",
       async () => {
+        const agent = await getAgentByName(
+          this.env.ChatAgent,
+          event.payload.agentName!
+        );
+        const investigations = await agent.getInvestigations();
+        const associatedAlerts = investigations.find(
+          (item) => item.id === event.instanceId
+        )?.alerts;
         const result = streamText({
           model: createChatModel(this.env, event.instanceId),
           system:
@@ -181,7 +189,8 @@ export class InvestigationWorkflow extends WorkflowEntrypoint<
           prompt: toJsonString({
             alert: event.payload.alert,
             ...evidenceBundle,
-            historicalContext
+            historicalContext,
+            associatedAlerts
           })
         });
         let preview = "";

@@ -19,6 +19,9 @@ import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
 import { observeToolCall } from "./tool-telemetry";
 import { createChatModel } from "./model-provider";
 import { handleAlertWebhook } from "./alert-webhook";
+import type { AlertNotification } from "./alert-webhook";
+import { admitAlert } from "./alert-admission";
+import type { AlertCorrelation } from "./alert-correlation";
 import {
   newestInvestigations,
   type InvestigationProgress,
@@ -28,6 +31,7 @@ export { InvestigationWorkflow } from "./investigation-workflow";
 
 export class ChatAgent extends AIChatAgent<Env, InvestigationState> {
   initialState: InvestigationState = { investigations: [] };
+  private alertIntake: Promise<unknown> = Promise.resolve();
   maxPersistedMessages = 100;
   chatRecovery = true;
   // Wait for MCP connections to be re-established after hibernation before
@@ -384,10 +388,71 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
     const previous = current.find((item) => item.id === progress.id);
     this.setState({
       investigations: newestInvestigations([
-        { ...progress, startedAt: previous?.startedAt ?? progress.startedAt },
+        {
+          ...progress,
+          alerts: progress.alerts ?? previous?.alerts,
+          startedAt: previous?.startedAt ?? progress.startedAt
+        },
         ...current.filter((item) => item.id !== progress.id)
       ]).slice(0, 50)
     });
+  }
+
+  acceptAlerts(
+    alerts: AlertNotification[],
+    sinceSeconds: number,
+    agentName: string
+  ) {
+    const admission = this.alertIntake.then(async () => {
+      this
+        .sql`CREATE TABLE IF NOT EXISTS alert_associations (episode_id TEXT PRIMARY KEY, investigation_id TEXT NOT NULL, correlation_json TEXT NOT NULL)`;
+      const results = [];
+      for (const alert of alerts) {
+        results.push(
+          await admitAlert(
+            {
+              env: this.env,
+              sinceSeconds,
+              agentName,
+              getInvestigations: () => this.getInvestigations(),
+              update: (progress) =>
+                this.updateInvestigation({
+                  ...progress,
+                  alerts: progress.alerts
+                }),
+              find: (episodeId) => {
+                const [row] = this.sql<{
+                  investigation_id: string;
+                  correlation_json: string;
+                }>`SELECT investigation_id, correlation_json FROM alert_associations WHERE episode_id = ${episodeId}`;
+                return row
+                  ? {
+                      investigationId: row.investigation_id,
+                      correlation: JSON.parse(
+                        row.correlation_json
+                      ) as AlertCorrelation
+                    }
+                  : undefined;
+              },
+              save: (episodeId, investigationId, correlation) => {
+                this
+                  .sql`INSERT OR REPLACE INTO alert_associations VALUES (${episodeId}, ${investigationId}, ${JSON.stringify(correlation)})`;
+              }
+            },
+            alert
+          )
+        );
+      }
+      return {
+        created: results.reduce((sum, result) => sum + result.created, 0),
+        workflows: [
+          ...new Set(results.map((result) => result.investigationId))
+        ],
+        correlations: results.map((result) => result.correlation)
+      };
+    });
+    this.alertIntake = admission.catch(() => {});
+    return admission;
   }
 
   @callable()
@@ -405,6 +470,17 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
             const latest = this.state.investigations.find(
               (value) => value.id === item.id
             );
+            if (
+              latest &&
+              status.status === "complete" &&
+              latest.status !== "complete"
+            ) {
+              this.updateInvestigation({
+                ...latest,
+                status: "complete",
+                updatedAt: new Date().toISOString()
+              });
+            }
             if (
               latest &&
               (status.status === "errored" || status.status === "terminated")

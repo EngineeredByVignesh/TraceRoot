@@ -1,3 +1,5 @@
+import type { AlertAssociation } from "./alert-admission";
+
 export const investigationStages = [
   "Deployment",
   "Alerts",
@@ -20,6 +22,7 @@ export type InvestigationProgress = {
   updatedAt: string;
   detail?: string;
   report?: string;
+  alerts?: AlertAssociation[];
 };
 export type InvestigationState = { investigations: InvestigationProgress[] };
 

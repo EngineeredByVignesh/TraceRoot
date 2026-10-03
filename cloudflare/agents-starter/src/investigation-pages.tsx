@@ -154,6 +154,30 @@ export function InvestigationView({
                   Started {new Date(selected.startedAt).toLocaleString()}
                 </time>
               </div>
+              {!!selected.alerts?.length && (
+                <section aria-label="Associated alerts" className="mb-6">
+                  <h2 className="text-sm font-semibold mb-3">
+                    Alerts ({selected.alerts.length})
+                  </h2>
+                  <ul className="divide-y divide-kumo-line text-sm">
+                    {selected.alerts.map(
+                      ({ episodeId, alert, correlation }) => (
+                        <li key={episodeId} className="py-2 break-words">
+                          <span className="font-medium">
+                            {alert.labels.alertname}
+                          </span>
+                          {correlation.correlated && (
+                            <p className="text-xs text-kumo-subtle mt-1">
+                              {Math.round(correlation.confidence * 100)}%
+                              confidence: {correlation.reason}
+                            </p>
+                          )}
+                        </li>
+                      )
+                    )}
+                  </ul>
+                </section>
+              )}
               <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
                 <section aria-label="Investigation stages">
                   <h2 className="text-sm font-semibold mb-4">Workflow</h2>

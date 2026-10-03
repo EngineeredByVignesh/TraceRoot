@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { requireEnv } from "./config";
+import { getAgentByName } from "agents";
 
 const alertSchema = z.object({
   status: z.enum(["firing", "resolved"]),
@@ -119,31 +120,13 @@ export async function handleAlertWebhook(
     );
   }
   const agentName = requireEnv(env, "ALERT_WEBHOOK_AGENT_NAME");
-  const entries = await Promise.all(
-    firing.map(async (alert) => ({
-      id: await alertWorkflowId(alert),
-      params: {
-        question: `Investigate firing alert ${alert.labels.alertname}.`,
-        sinceSeconds,
-        alert,
-        agentName
-      }
-    }))
-  );
-  const unique = [
-    ...new Map(entries.map((entry) => [entry.id, entry])).values()
-  ];
-  // createBatch skips existing IDs, including concurrent Alertmanager retries.
-  const created = await env.INVESTIGATION_WORKFLOW.createBatch(unique);
+  const agent = await getAgentByName(env.ChatAgent, agentName);
+  const result = await agent.acceptAlerts(firing, sinceSeconds, agentName);
   console.log(
     JSON.stringify({
       event: "alert_webhook.accepted",
-      created: created.length,
-      workflows: unique.map(({ id }) => id)
+      ...result
     })
   );
-  return Response.json(
-    { created: created.length, workflows: unique.map(({ id }) => id) },
-    { status: 202 }
-  );
+  return Response.json(result, { status: 202 });
 }

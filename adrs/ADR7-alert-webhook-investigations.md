@@ -10,7 +10,9 @@ Firing alerts should initiate an investigation without a user opening chat or as
 
 ## Decision
 
-Add an opt-in, bearer-authenticated Alertmanager v4 receiver at `POST /api/alerts/webhook`. Allow only configured alert names and firing events. Each fingerprint/start-time pair identifies a Workflow; idempotent batch creation deduplicates retries and repeat notifications while the instance remains retained. A new firing episode starts a new investigation.
+Add an opt-in, bearer-authenticated Alertmanager v4 receiver at `POST /api/alerts/webhook`. Allow only configured alert names and firing events. Serialize admission through the configured agent. Before creating a Workflow, ask the selected chat provider to correlate the incoming alert against running/retrying investigation snapshots. Validate structured output (`correlated`, `investigationId`, `confidence`, `reason`) and require an active target ID. Attach matching alerts to that investigation without creating another Workflow. No active incidents, a non-match, invalid output, a model failure, or a target completing during inference starts a separate Workflow.
+
+Fingerprint/start-time pairs identify firing episodes. Persist episode-to-investigation associations in agent SQLite storage to deduplicate subsequent deliveries, including correlated alerts after completion. Deterministic Workflow IDs also protect creation retries. No additional provider or upstream configuration is needed.
 
 Reuse the evidence Workflow, then search historical memory, generate an RCA using the selected chat provider, and persist/broadcast the report in investigation state. Keep these operations in separate steps. Workflow IDs identify snapshots for idempotent updates. `GET /api/alerts/workflows/<id>` returns status and completed output using the same bearer token.
 
@@ -22,7 +24,8 @@ Persist investigation progress in agent state and synchronize it to the UI over 
 - Resolved and unlisted alerts do not start investigations. No remediation or automatic memory writes occur.
 - Evidence, model, and publication failures use Workflow retries. Historical memory is best effort and reports its unavailability as context.
 - The receiver acknowledges durable creation with HTTP 202; this does not mean the report is complete. Delivery failures return a non-success response for Alertmanager to retry.
-- Limit requests to 64 KiB and 100 alerts. Duplicate suppression lasts for Workflow retention; repeated publication updates the same investigation snapshot.
+- Limit requests to 64 KiB and 100 alerts. Episode associations persist with agent storage; repeated publication updates the same investigation snapshot.
+- Investigation details show attached alerts, correlation confidence, and reason. RCA generation includes alerts attached before generation begins; later attachments do not restart an already streaming report. Correlation adds a model call only when active snapshots exist, with a 15-second timeout and no inference retries. Investigations still execute concurrently after serialized admission.
 - Alertmanager needs network access to the agent. Existing Alertmanager/Loki port-forwards are still needed for the host tools API, but they do not carry webhook delivery.
 
 ## Local Setup

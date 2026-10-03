@@ -8,6 +8,9 @@ TraceRoot is a chat-driven incident investigator for the local IncidentLab Kuber
 flowchart TD
     User[User in chat UI] --> Agent[Cloudflare Worker: ChatAgent]
     Agent <--> State[Durable Object: chat and agent state]
+    Alerts -->|Authenticated firing webhook| Webhook[Alert receiver: filter and deduplicate]
+    Webhook --> Workflow
+    Workflow -->|Automatic RCA| State
 
     Agent --> GoogleRoute{Google model route}
     GoogleRoute -->|Gateway configured| Gateway[Cloudflare AI Gateway]
@@ -76,7 +79,11 @@ The model selects tools based on the question and streams its answer to the chat
 4. For durable collection, the agent starts a workflow and later retrieves its status/output using the returned ID.
 5. When asked to remember the incident, the agent stores its RCA details for future retrieval.
 
-The workflow collects five fixed evidence sources sequentially: deployment metadata, alerts, five-minute 5xx error rate, five-minute p95 latency, and recent logs. Each step has three retries with exponential backoff starting at ten seconds and a two-minute timeout. Completed steps are persisted for recovery. The output is an evidence bundle, not an independently generated RCA.
+The workflow collects five fixed evidence sources sequentially: deployment metadata, alerts, five-minute 5xx error rate, five-minute p95 latency, and recent logs. Each step has three retries with exponential backoff starting at ten seconds and a two-minute timeout. Completed steps are persisted for recovery. Manual runs return an evidence bundle. Alert-triggered runs additionally retrieve historical context, generate an RCA with the selected model, and publish it to chat. Memory retrieval is best effort; evidence, generation, and publication failures retry.
+
+An optional authenticated Alertmanager webhook filters configured firing alert names and starts one Workflow per fingerprint/start-time pair. Repeated deliveries reuse the existing instance during its retention period. Resolved alerts are ignored. See [ADR7](adrs/ADR7-alert-webhook-investigations.md) for local receiver setup and authenticated status lookup.
+
+Automatic investigations synchronize persistent progress to `/investigations` through the agent WebSocket, including evidence stages, retries, elapsed time, and streamed RCA text on `/investigations/<id>`. Reconnection restores snapshots, and status checks detect terminal Workflow failures. The list is ordered by start time, newest first. Automatic progress and reports do not appear on home or in popups.
 
 ## State, Models, and Observability
 
@@ -95,9 +102,9 @@ Scheduling supports creating, listing, and cancelling tasks. Execution currently
 ## Current Boundaries
 
 - Built-in lab tools inspect evidence; they do not roll back deployments or execute remediation. Added MCP servers may expose additional capabilities.
-- Investigations are initiated through chat. There is no implemented Alertmanager webhook that automatically starts an investigation.
+- Investigations start through chat or the opt-in Alertmanager webhook. The webhook requires local network and upstream receiver configuration.
 - Deployment inspection and durable evidence queries target demo-service; this is not a general multi-service incident platform.
-- Workflow completion does not automatically save an incident or push a generated report into chat. The agent retrieves results and saves memory through separate tools.
+- Alert-triggered Workflows publish generated reports to investigation state; manual Workflows return evidence for the agent to interpret. Neither automatically saves an incident to Vectorize.
 - Vectorize writes become searchable asynchronously. Historical similarity is context, not confirmation of a root cause. Changing embedding models requires compatible re-indexing or a separate index.
 - tools-api authenticates evidence endpoints with a bearer token. The starter's MCP OAuth is separate from Google API credentials and does not establish application-wide user authorization.
 

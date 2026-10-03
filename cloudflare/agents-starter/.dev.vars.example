@@ -27,3 +27,10 @@ GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
 # Cloudflare AI Gateway routing for Google model calls.
 # AI_GATEWAY_BASE_URL=
 # AI_GATEWAY_TOKEN=
+
+# Optional automatic Alertmanager investigations. Uncomment all settings to enable.
+# ALERT_WEBHOOK_ENABLED=true
+# ALERT_WEBHOOK_TOKEN=<separate-webhook-token>
+# ALERT_WEBHOOK_ALERT_NAMES=DemoServiceHighErrorRate,DemoServiceHighLatency
+# ALERT_WEBHOOK_AGENT_NAME=default
+# ALERT_INVESTIGATION_SINCE_SECONDS=1800

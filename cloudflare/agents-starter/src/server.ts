@@ -18,9 +18,16 @@ import {
 import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
 import { observeToolCall } from "./tool-telemetry";
 import { createChatModel } from "./model-provider";
+import { handleAlertWebhook } from "./alert-webhook";
+import {
+  newestInvestigations,
+  type InvestigationProgress,
+  type InvestigationState
+} from "./investigation-progress";
 export { InvestigationWorkflow } from "./investigation-workflow";
 
-export class ChatAgent extends AIChatAgent<Env> {
+export class ChatAgent extends AIChatAgent<Env, InvestigationState> {
+  initialState: InvestigationState = { investigations: [] };
   maxPersistedMessages = 100;
   chatRecovery = true;
   // Wait for MCP connections to be re-established after hibernation before
@@ -372,6 +379,59 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
     return result.toUIMessageStreamResponse();
   }
 
+  updateInvestigation(progress: InvestigationProgress) {
+    const current = this.state?.investigations ?? [];
+    const previous = current.find((item) => item.id === progress.id);
+    this.setState({
+      investigations: newestInvestigations([
+        { ...progress, startedAt: previous?.startedAt ?? progress.startedAt },
+        ...current.filter((item) => item.id !== progress.id)
+      ]).slice(0, 50)
+    });
+  }
+
+  @callable()
+  async getInvestigations() {
+    const current = this.state?.investigations ?? [];
+    await Promise.all(
+      current
+        .filter(
+          (item) => item.status === "running" || item.status === "retrying"
+        )
+        .map(async (item) => {
+          try {
+            const instance = await this.env.INVESTIGATION_WORKFLOW.get(item.id);
+            const status = await instance.status();
+            const latest = this.state.investigations.find(
+              (value) => value.id === item.id
+            );
+            if (
+              latest &&
+              (status.status === "errored" || status.status === "terminated")
+            ) {
+              this.updateInvestigation({
+                ...latest,
+                status: "failed",
+                detail: status.error?.message ?? "Investigation stopped.",
+                updatedAt: new Date().toISOString()
+              });
+            }
+          } catch {
+            /* A temporary status lookup failure does not terminate the investigation. */
+          }
+        })
+    );
+    return this.state?.investigations ?? [];
+  }
+
+  async recordAlertReport(workflowId: string, report: string) {
+    // Retain the RPC for already-running Workflows; reports belong to investigation state.
+    const current = this.state?.investigations.find(
+      (item) => item.id === workflowId
+    );
+    if (current) this.updateInvestigation({ ...current, report });
+  }
+
   async executeTask(description: string, _task: Schedule<string>) {
     // Do the actual work here (send email, call API, etc.)
     console.log(`Executing scheduled task: ${description}`);
@@ -392,6 +452,22 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
 
 export default {
   async fetch(request: Request, env: Env) {
+    if (new URL(request.url).pathname.startsWith("/api/alerts/")) {
+      try {
+        return await handleAlertWebhook(request, env);
+      } catch (error) {
+        console.error(
+          JSON.stringify({
+            event: "alert_webhook.failure",
+            message: error instanceof Error ? error.message : String(error)
+          })
+        );
+        return Response.json(
+          { error: "Alert processing failed; retry delivery." },
+          { status: 503 }
+        );
+      }
+    }
     return (
       (await routeAgentRequest(request, env)) ||
       new Response("Not found", { status: 404 })

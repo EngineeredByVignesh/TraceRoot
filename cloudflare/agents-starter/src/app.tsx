@@ -375,6 +375,9 @@ function Chat() {
   });
 
   const isStreaming = status === "streaming" || status === "submitted";
+  const chatMessages = messages.filter(
+    (message) => !message.id.startsWith("report-alert-")
+  );
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -697,7 +700,7 @@ function Chat() {
       {/* Messages */}
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-3xl mx-auto px-5 py-6 space-y-5">
-          {messages.length === 0 && (
+          {chatMessages.length === 0 && (
             <Empty
               icon={<ChatCircleDotsIcon size={32} />}
               title="Start a conversation"
@@ -729,10 +732,10 @@ function Chat() {
             />
           )}
 
-          {messages.map((message: UIMessage, index: number) => {
+          {chatMessages.map((message: UIMessage, index: number) => {
             const isUser = message.role === "user";
             const isLastAssistant =
-              message.role === "assistant" && index === messages.length - 1;
+              message.role === "assistant" && index === chatMessages.length - 1;
 
             return (
               <div key={message.id} className="space-y-2">

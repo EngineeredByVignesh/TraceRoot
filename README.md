@@ -30,3 +30,9 @@ npm run start
 ```
 
 Before starting, edit both local env files with your configuration. Examples are the source of suggested values; the application has no configuration fallbacks. Uncomment settings for the selected provider and optional Gateway. Keep local env files out of Git.
+
+## Automatic Investigations
+
+Follow [ADR7](adrs/ADR7-alert-webhook-investigations.md#local-setup) to enable the authenticated Alertmanager webhook and configure the lab receiver. Firing alerts then start durable investigations automatically.
+
+Open `/investigations` for the live workflow list, ordered newest first by start time. Each row opens `/investigations/<id>` with live stages, retries, and RCA text. Automatic investigations appear only on these pages, without popups. The home chat remains available at `/`.

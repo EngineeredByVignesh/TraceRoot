@@ -1,4 +1,9 @@
 interface Env {
+  ALERT_WEBHOOK_ENABLED?: string;
+  ALERT_WEBHOOK_TOKEN?: string;
+  ALERT_WEBHOOK_ALERT_NAMES?: string;
+  ALERT_WEBHOOK_AGENT_NAME?: string;
+  ALERT_INVESTIGATION_SINCE_SECONDS?: string;
   TOOL_API_BASE_URL: string;
   TOOL_API_TOKEN: string;
   MODEL_PROVIDER: string;

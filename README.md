@@ -10,6 +10,8 @@ These are large-suite observations, not production guarantees. The run was quota
 
 [View the demo screenshots and saved manual chat page](demo/README.md).
 
+[Open the hosted manual chat demo](https://engineeredbyvignesh.github.io/TraceRoot/demo/pages/manual-chat.html) (static conversation snapshot, not the live agent).
+
 ## Features & Use Cases
 
 - **Automatic incident intake:** authenticated Alertmanager webhooks start investigations without a chat prompt.
@@ -32,6 +34,23 @@ Open `/` and ask, for example: "Investigate demo-service errors: check deploymen
 `Alert → Correlation → Incident → Workflow → RCA Agent → Vectorize Memory → RCA + Fix`
 
 This is the conceptual flow; historical retrieval and reuse validation happen before final RCA generation.
+
+```mermaid
+flowchart LR
+    Alerts["Alertmanager webhook"] --> Intake["Worker: authenticate, deduplicate, correlate"]
+    Chat["Chat UI"] --> Agent["RCA agent"]
+    Intake --> Incident["Incident state: Durable Object"]
+    Incident --> Workflow["Durable investigation: Workflows"]
+    Workflow --> Agent
+    Agent <--> Evidence["FastAPI evidence tools"]
+    Evidence <--> Lab["IncidentLab: metrics, logs, alerts, deployments"]
+    Agent <--> Memory["Vectorize: historical incidents and reuse rules"]
+    Agent <--> Models["Multi-provider AI: Workers AI / Gemini / OpenRouter"]
+    Models --> Gateway["Optional AI Gateway: model observability"]
+    Agent --> Report["RCA + Summary + Fix"]
+    Workflow --> Live["Live investigation UI"]
+    Report --> Live
+```
 
 [Read the full architecture](ARCHITECTURE.md).
 

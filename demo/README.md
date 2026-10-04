@@ -4,7 +4,9 @@ Local captures of manual chat and alert-triggered investigations. These are prod
 
 ## Manual Chat
 
-[Saved chat UI page](pages/manual-chat.html). Open the HTML locally to inspect the captured conversation; GitHub displays its source rather than running it. This is a saved snapshot, not the live application.
+[Open the hosted manual chat demo](https://engineeredbyvignesh.github.io/TraceRoot/demo/pages/manual-chat.html) to view the captured conversation. This is a static snapshot, not the live application.
+
+[Saved HTML for offline viewing](pages/manual-chat.html). GitHub displays its source; open the downloaded HTML locally to render it.
 
 For live chat, follow [local startup](../README.md#running-locally), open `/`, and ask the agent to investigate symptoms using deployment, alert, metric, log, and historical evidence.
 

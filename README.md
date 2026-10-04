@@ -8,11 +8,7 @@ These are large-suite observations, not production guarantees. The run was quota
 
 ## Demo
 
-![Live investigation list with completed alert-driven workflows](docs/images/investigations.png)
-
-A genuine local capture of the investigation list; displayed durations are historical UI examples, not benchmark measurements.
-
-Fire an alert in [IncidentLab](https://github.com/EngineeredByVignesh/IncidentLab), open `/investigations`, and select a workflow to follow correlation, evidence collection, historical retrieval, and the resulting report. Reviewed RCA reuse is opt-in; generated reports are not automatically promoted to memory.
+[View the demo screenshots and saved manual chat page](demo/README.md).
 
 ## Features & Use Cases
 
@@ -21,10 +17,15 @@ Fire an alert in [IncidentLab](https://github.com/EngineeredByVignesh/IncidentLa
 - **Durable investigation:** retain completed steps and retry failures rather than restarting the whole investigation.
 - **RCA and remediation:** combine current evidence into `RCA`, `Summary`, and `Fix`; recommend diagnostics when the cause is unknown.
 - **Incident memory:** retrieve prior incidents and safely reuse reviewed remedies when current conditions match.
-- **Interactive investigation:** ask questions and inspect evidence through chat.
+- **Manual chat investigation:** describe symptoms, ask follow-up questions, and query deployment, alert, metric, log, and historical evidence without waiting for a webhook.
+- **Multi-provider support:** switch between Cloudflare Workers AI, Google Gemini, and OpenRouter through environment configuration.
 - **Live visibility:** follow workflow stages and reports, with model and tool-call telemetry for debugging.
 
 Use it to explore noisy alert bursts, investigate regressions, and evaluate recurring incidents. Current evidence tools are scoped to the configured demo deployment; this is not a production-ready general incident platform. Fixes are recommendations, not automatic remediation.
+
+### Manual Chat
+
+Open `/` and ask, for example: "Investigate demo-service errors: check deployments, active alerts, metrics, logs, and similar past incidents." Continue with follow-up questions or ask the agent to start a durable investigation. Chat uses the same evidence tools and configured model; an Alertmanager webhook is not required.
 
 ## How It Works
 
@@ -46,6 +47,12 @@ This is the conceptual flow; historical retrieval and reuse validation happen be
 | Workers AI, Google Gemini, OpenRouter      | Select the chat/RCA provider through configuration without changing the investigation pipeline.            |
 | React + TypeScript + Vite                  | Provide interactive chat and realtime investigation pages with typed application code.                     |
 | FastAPI + Prometheus/Loki/Kubernetes tools | Expose authenticated evidence queries to the agent without granting it remediation commands.               |
+
+### Models & Providers
+
+The documented benchmarks used **Cloudflare Workers AI's Llama 3.1 8B Instruct FP8** (`@cf/meta/llama-3.1-8b-instruct-fp8`) for correlation and RCA, with **Google Gemini Embedding** (`gemini-embedding-001`, 768 dimensions) for Vectorize incident memory.
+
+Set `MODEL_PROVIDER=cloudflare`, `google`, or `openrouter` to select the chat/RCA provider after configuring its model and credentials. Embeddings are selected independently through `EMBEDDING_PROVIDER=google|cloudflare`; an optional classification override can also use a separate model. Provider switching is explicit, not automatic failover. See [provider configuration](adrs/ADR3-multiple-model-providers.md) and [memory setup](adrs/ADR6-vectorize-incident-memory.md).
 
 ## Benchmark Results
 

@@ -294,7 +294,7 @@ Runner errors: none.
 ## Raw Evidence
 
 Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/results-large.json).
-The retained best previous context-enrichment benchmark is under `benchmarks/baseline/`; its report includes the previous Gateway export. It is historical context, not the current run.
+Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).
 
 ## Scale Breakdown
 
@@ -344,11 +344,11 @@ The new resource, OOM, restart, rollout and disk alerts in IncidentLab are expli
 
 Scenario names, summaries and logs carry clear diagnostic cues, and distinct components identify the intended incident boundaries. This is not a blind production-RCA or cross-component cascade benchmark. The shared deployment fixture always reports a successful rollout, while crash-loop/rollout-failure logs describe unavailable replicas; the rollout log also refers to a missing image tag. These contradictory fixture fields limit the validity of those RCA/reuse results. They were not repaired mid-run or hidden; correct deployment-state fixtures are needed before treating those scenarios as validated diagnostics.
 
-The small v4 dataset, results, report and matching Gateway summary are byte-for-byte unchanged. They remain at `benchmarks/dataset.json`, `benchmarks/results.json`, `benchmark-results.md`, and `benchmarks/gateway-summary.json`. The large run changes case mixture and expands the seeded memory catalog, so aggregate small/large percentages are not a controlled model comparison.
+The small v4 dataset, raw results and matching Gateway summary are preserved; report documentation links were cleaned without changing measured results. They remain at `benchmarks/dataset.json`, `benchmarks/results.json`, `benchmark-results.md`, and `benchmarks/gateway-summary.json`. The large run changes case mixture and expands the seeded memory catalog, so aggregate small/large percentages are not a controlled model comparison.
 
-One initial setup attempt (`660d720a`) failed benchmark request validation before any scored case and is retained under `benchmarks/history/`. Another setup run was stopped before its first case checkpoint to load the scalable evaluator; `.dev.vars` was restored before restarting. Name sanitization, a benchmark-only 50-alert intake limit, and an equivalent exact assignment algorithm were fixed before this scored run. Tests confirm the new evaluator reproduces both frozen small-run correlation scores. These setup/preflight calls are not scored investigations and should not be mixed into Gateway text accounting.
+Setup/preflight calls are not scored investigations and are excluded from Gateway text accounting. The scalable evaluator was validated against frozen small-run correlation scores before this scored run.
 
-Normal agent and tools API were restarted after cleanup. Their HTTP endpoints are available, but new Cloudflare model calls may remain blocked by the exhausted quota. A matching Gateway export is needed for run `89c2a517`, October 4, 2026, approximately 15:44:53-17:01:34 IST. Use `node benchmarks/analyze-gateway.mjs "<export.json>" --config config-large.json`; outputs stay separate in `benchmarks/gateway-summary-large.json`. Scored raw result SHA-256: `52bda981ca60084a72031fb7af85a36f622b2e076aab25309e1e89116a563374`.
+Matching Gateway accounting is included below and saved separately in `benchmarks/gateway-summary-large.json`. Regenerate it with `node benchmarks/analyze-gateway.mjs "<export.json>" --config config-large.json` after report-only regeneration. Scored raw result SHA-256: `52bda981ca60084a72031fb7af85a36f622b2e076aab25309e1e89116a563374`.
 
 ## AI Gateway Export Analysis
 

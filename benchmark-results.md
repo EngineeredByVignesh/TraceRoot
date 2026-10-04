@@ -119,7 +119,7 @@ Runner errors: none.
 ## Raw Evidence
 
 Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/results.json).
-The retained best previous context-enrichment benchmark is under `benchmarks/baseline/`; its report includes the previous Gateway export. It is historical context, not the current run.
+Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).
 
 ## Qualitative Review
 
@@ -135,7 +135,7 @@ Non-blinded spot check of conflict, ambiguous-evidence and format outcomes. Thes
 
 Next improvements to validate separately: prevent conflicting or unverified historical remedies from contaminating full investigations; enforce the three-section output contract; expand unsupported-action checks to cover pool resets; calibrate reuse retrieval on held-out recurrence and negative examples rather than lowering the threshold to fit this run.
 
-Normal local agent and tools API were restarted after restoration. Matching Gateway text accounting for run `e5a2e55a`, October 4, 2026, approximately 14:50-15:13 IST, is included below; embedding-inclusive cost remains unknown. The prior run's Gateway summary is retained separately at `benchmarks/history/60e43679-gateway-summary.json`.
+Normal local agent and tools API were restarted after restoration. Matching Gateway text accounting for run `e5a2e55a`, October 4, 2026, approximately 14:50-15:13 IST, is included below; embedding-inclusive cost remains unknown.
 
 ## AI Gateway Export Analysis
 

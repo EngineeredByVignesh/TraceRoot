@@ -681,7 +681,7 @@ function report() {
     "## Raw Evidence",
     "",
     `Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/${config.resultFile}).`,
-    "The retained best previous context-enrichment benchmark is under `benchmarks/baseline/`; its report includes the previous Gateway export. It is historical context, not the current run.",
+    "Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).",
   );
   if (review?.runId === output.runId) {
     if (review.sectionsMarkdown) {
@@ -690,15 +690,6 @@ function report() {
       lines.push("", "## Qualitative Review", "", review.method);
       for (const finding of review.findings)
         lines.push(`- ${finding.finding} Source workflow: ${finding.workflowId}.`);
-      lines.push(
-        "- All seven known-recurrence workflows that missed reuse had retrieved similarities below the unchanged 0.90 threshold. The two hits were approximately 0.9008. This suggests a sharp, uncalibrated cutoff; it was not lowered during the run.",
-      );
-      lines.push(
-        "- The negative cases also retrieved below-threshold similarities. Their zero false reuses do not independently prove the image/signature guards were exercised at high similarity; those guards have separate functional tests.",
-      );
-      lines.push(
-        "- Correlation does not consume memory. Arm differences in grouping are generation/timing variation, not evidence that memory improved or worsened classification causally. Total embedding-inclusive cost requires reliable embedding accounting; zero exported usage would remain inconclusive.",
-      );
     }
   }
   return lines.join("\n") + "\n";

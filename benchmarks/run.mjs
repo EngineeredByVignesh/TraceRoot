@@ -663,8 +663,8 @@ function report() {
     "",
     "## Raw Evidence",
     "",
-    `Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/${config.resultFile}).`,
-    "Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).",
+    `Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](${config.resultFile}).`,
+    "Reproduction instructions and metric definitions: [benchmark guide](guide.md). Final datasets: [small](dataset.json) and [large](dataset-large.json).",
   );
   if (review?.runId === output.runId) {
     if (review.sectionsMarkdown) {

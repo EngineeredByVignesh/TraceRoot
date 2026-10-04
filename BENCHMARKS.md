@@ -95,4 +95,4 @@ Next priorities: reduce burst fragmentation, prevent conflicting historical cont
 | Small | [Config](benchmarks/config.json) | [Results](benchmarks/results.json) | [Gateway](benchmarks/gateway-summary.json) | [Review](benchmarks/review.json) |
 | Large | [Config](benchmarks/config-large.json) | [Results](benchmarks/results-large.json) | [Gateway](benchmarks/gateway-summary-large.json) | [Review](benchmarks/review-large.json) |
 
-[Prerequisites, execution commands and schema](benchmarks/guide.md). Detailed run reports: [small](benchmark-results.md), [large](benchmark-results-large.md). Both final datasets and raw results are preserved; no new benchmark was run for this documentation.
+[Prerequisites, execution commands and schema](benchmarks/guide.md). Detailed run reports: [small](benchmarks/benchmark-results.md), [large](benchmarks/benchmark-results-large.md). Both final datasets and raw results are preserved; no new benchmark was run for this documentation.

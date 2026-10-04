@@ -9,7 +9,7 @@
   "python": "python",
   "dataset": "dataset-large.json",
   "resultFile": "results-large.json",
-  "reportFile": "../benchmark-results-large.md",
+  "reportFile": "benchmark-results-large.md",
   "gatewaySummaryFile": "gateway-summary-large.json",
   "reviewFile": "review-large.json",
   "reportTitle": "TraceRoot Large-Scale Benchmark Results",

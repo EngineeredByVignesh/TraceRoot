@@ -1,6 +1,6 @@
 # TraceRoot Large-Scale Benchmark Results
 
-Public summary: [small and large benchmarks](BENCHMARKS.md).
+Public summary: [small and large benchmarks](../BENCHMARKS.md).
 
 **Quota-confounded run, not a clean full-run A/B comparison.** All 300 alerts were replayed, but Cloudflare's daily neuron allocation ran out during the final without-memory pass. Twelve workflows failed. Failed reports remain in the accuracy denominators; the apparent full-run quality advantage of memory must not be interpreted as a causal improvement. No results, dataset, model or thresholds were changed to hide these failures.
 
@@ -83,8 +83,8 @@ Runner errors: none.
 
 ## Raw Evidence
 
-Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/results-large.json).
-Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).
+Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](results-large.json).
+Reproduction instructions and metric definitions: [benchmark guide](guide.md). Final datasets: [small](dataset.json) and [large](dataset-large.json).
 
 ## Scale Breakdown
 
@@ -134,7 +134,7 @@ The new resource, OOM, restart, rollout and disk alerts in IncidentLab are expli
 
 Scenario names, summaries and logs carry clear diagnostic cues, and distinct components identify the intended incident boundaries. This is not a blind production-RCA or cross-component cascade benchmark. The shared deployment fixture always reports a successful rollout, while crash-loop/rollout-failure logs describe unavailable replicas; the rollout log also refers to a missing image tag. These contradictory fixture fields limit the validity of those RCA/reuse results. They were not repaired mid-run or hidden; correct deployment-state fixtures are needed before treating those scenarios as validated diagnostics.
 
-The small v4 dataset, raw results and matching Gateway summary are preserved; report documentation links were cleaned without changing measured results. They remain at `benchmarks/dataset.json`, `benchmarks/results.json`, `benchmark-results.md`, and `benchmarks/gateway-summary.json`. The large run changes case mixture and expands the seeded memory catalog, so aggregate small/large percentages are not a controlled model comparison.
+The small v4 dataset, raw results and matching Gateway summary are preserved; report documentation links were cleaned without changing measured results. They remain at `benchmarks/dataset.json`, `benchmarks/results.json`, `benchmarks/benchmark-results.md`, and `benchmarks/gateway-summary.json`. The large run changes case mixture and expands the seeded memory catalog, so aggregate small/large percentages are not a controlled model comparison.
 
 Setup/preflight calls are not scored investigations and are excluded from Gateway text accounting. The scalable evaluator was validated against frozen small-run correlation scores before this scored run.
 

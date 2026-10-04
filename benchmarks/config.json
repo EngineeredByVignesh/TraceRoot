@@ -9,7 +9,7 @@
   "python": "python",
   "dataset": "dataset.json",
   "resultFile": "results.json",
-  "reportFile": "../benchmark-results.md",
+  "reportFile": "benchmark-results.md",
   "repetitions": 2,
   "armOrders": [
     ["withoutMemory", "withMemory"],

@@ -4,8 +4,8 @@
 
 | Suite | Dataset | Configuration | Raw results | Report | Gateway summary |
 | --- | --- | --- | --- | --- | --- |
-| Small | [dataset.json](dataset.json) | [config.json](config.json) | [results.json](results.json) | [Report](../benchmark-results.md) | [Summary](gateway-summary.json) |
-| Large | [dataset-large.json](dataset-large.json) | [config-large.json](config-large.json) | [results-large.json](results-large.json) | [Report](../benchmark-results-large.md) | [Summary](gateway-summary-large.json) |
+| Small | [dataset.json](dataset.json) | [config.json](config.json) | [results.json](results.json) | [Report](benchmark-results.md) | [Summary](gateway-summary.json) |
+| Large | [dataset-large.json](dataset-large.json) | [config-large.json](config-large.json) | [results-large.json](results-large.json) | [Report](benchmark-results-large.md) | [Summary](gateway-summary-large.json) |
 
 The small suite contains six cases covering exact/noisy recurrence, changed image, different cause, overlapping independent incidents and insufficient evidence. The large suite adds ten incident categories, individually and as an interleaved burst, while retaining the small cases. These are controlled evidence replays, not physical production fault injection. Different case mixtures are not a controlled model-quality comparison.
 

@@ -1,6 +1,6 @@
 # TraceRoot Benchmark Results
 
-Public summary: [small and large benchmarks](BENCHMARKS.md).
+Public summary: [small and large benchmarks](../BENCHMARKS.md).
 
 Run: e5a2e55a. Window: 2026-10-04T09:20:01.459Z to 2026-10-04T09:43:11.800Z.
 Model: cloudflare/@cf/meta/llama-3.1-8b-instruct-fp8. Dataset: v4, SHA-256 ca5e4e63a10a249c45df5b5c6eb87d8833be0cce2ba4b9127111927e75449251.
@@ -81,8 +81,8 @@ Runner errors: none.
 
 ## Raw Evidence
 
-Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](benchmarks/results.json).
-Reproduction instructions and metric definitions: [benchmark guide](benchmarks/guide.md). Final datasets: [small](benchmarks/dataset.json) and [large](benchmarks/dataset-large.json).
+Raw decisions, reports, scopes, expected reuse eligibility, model events and actual tool calls: [results](results.json).
+Reproduction instructions and metric definitions: [benchmark guide](guide.md). Final datasets: [small](dataset.json) and [large](dataset-large.json).
 
 ## Qualitative Review
 

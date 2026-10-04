@@ -6,6 +6,27 @@ export function requireEnv(env: Env, name: keyof Env): string {
   return value;
 }
 
+export function requireNumber(
+  env: Env,
+  name: keyof Env,
+  min: number,
+  max: number,
+  integer = false
+): number {
+  const value = Number(requireEnv(env, name));
+  if (
+    !Number.isFinite(value) ||
+    value < min ||
+    value > max ||
+    (integer && !Number.isSafeInteger(value))
+  ) {
+    throw new Error(
+      `${String(name)} must be ${integer ? "an integer" : "a number"} between ${min} and ${max}.`
+    );
+  }
+  return value;
+}
+
 export function requireProvider(
   env: Env,
   name: "MODEL_PROVIDER"

@@ -16,12 +16,14 @@ import {
   queryMetrics
 } from "./incident-tools";
 import { rememberIncident, searchSimilarIncidents } from "./incident-memory";
+import { reuseConditionsSchema } from "./memory-reuse";
 import { observeToolCall } from "./tool-telemetry";
 import { createChatModel } from "./model-provider";
 import { handleAlertWebhook } from "./alert-webhook";
 import type { AlertNotification } from "./alert-webhook";
 import { admitAlert } from "./alert-admission";
 import type { AlertCorrelation } from "./alert-correlation";
+import { requireNumber } from "./config";
 import {
   newestInvestigations,
   type InvestigationProgress,
@@ -72,7 +74,7 @@ export class ChatAgent extends AIChatAgent<Env, InvestigationState> {
 
     const result = streamText({
       model,
-      system: `You are a Cloudflare Incident Investigator Agent for a local Kubernetes incident lab.
+      system: `You are a Incident Investigator Agent for a kubernetes.
 
 You have four incident tools:
 - getDeployments: use it when the user asks about the demo-service deployment, rollout, version, image, or active failure mode.
@@ -86,6 +88,8 @@ You have four incident tools:
 
 For incident investigations, gather deployment metadata, alerts, metrics, and logs before giving a root-cause answer.
 When answering from tool results, summarize concrete evidence and avoid guessing.
+Current evidence outranks historical memory. Similar incidents are hypotheses, not proof; embedding similarity is retrieval similarity, never causal confidence. Reuse a historical RCA only when current evidence satisfies its stored reuse conditions; conflicts require a full investigation. If the cause is unknown or insufficiently supported, propose only evidence-supported diagnostics or containment, not a cause-specific fix as though established.
+Final investigation results must contain exactly three Markdown headings in this order: ## RCA, ## Summary, ## Fix. Do not add a preamble, conclusion, or other headings. Under RCA, state the likely cause, supporting evidence and uncertainty; say unknown when evidence is insufficient. Under Summary, briefly describe affected scope, observed impact and any skipped checks or historical reuse. Under Fix, give the targeted proposed remedy and concise verification checks. Never claim a fix was executed or recovery confirmed without tool evidence; do not invent commands or configuration. Keep unrelated incidents separate. This format applies to final incident reports, not ordinary chat replies or status updates.
 
 ${getSchedulePrompt({ date: new Date() })}
 
@@ -258,11 +262,16 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
 
         rememberIncident: tool({
           description:
-            "Store an incident/RCA in long-term Vectorize memory so future investigations can retrieve it.",
+            "Store an incident/RCA in long-term Vectorize memory. Only include reuseConditions when the user explicitly supplies and approves all rules for skipping a full investigation; never invent them from a likely root cause.",
           inputSchema: z.object({
             title: z.string().describe("Short incident title"),
             summary: z.string().describe("Brief incident summary"),
             rootCause: z.string().describe("Confirmed or likely root cause"),
+            reuseConditions: reuseConditionsSchema
+              .optional()
+              .describe(
+                "Explicit user-approved reuse rules; omit for ordinary incident memories."
+              ),
             remediation: z
               .string()
               .describe("Remediation or mitigation that resolved the incident"),
@@ -398,10 +407,54 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
     });
   }
 
+  acquireModelSlot(owner: string, timeoutMs: number) {
+    this
+      .sql`CREATE TABLE IF NOT EXISTS model_leases (owner TEXT PRIMARY KEY, expires_at INTEGER NOT NULL)`;
+    this
+      .sql`CREATE TABLE IF NOT EXISTS model_budget (id INTEGER PRIMARY KEY, next_at INTEGER NOT NULL)`;
+    const now = Date.now();
+    this.sql`DELETE FROM model_leases WHERE expires_at <= ${now}`;
+    const [budget] = this.sql<{
+      next_at: number;
+    }>`SELECT next_at FROM model_budget WHERE id = 1`;
+    const [count] = this.sql<{
+      total: number;
+    }>`SELECT count(*) AS total FROM model_leases`;
+    const limit = requireNumber(this.env, "LLM_MAX_CONCURRENCY", 1, 20, true);
+    if ((budget?.next_at ?? 0) > now || count.total >= limit) {
+      return {
+        acquired: false,
+        retryAfterMs: Math.max(0, (budget?.next_at ?? now) - now)
+      };
+    }
+    const spacing = requireNumber(
+      this.env,
+      "LLM_MIN_INTERVAL_MS",
+      0,
+      60000,
+      true
+    );
+    this
+      .sql`INSERT OR REPLACE INTO model_leases VALUES (${owner}, ${now + timeoutMs})`;
+    this.sql`INSERT OR REPLACE INTO model_budget VALUES (1, ${now + spacing})`;
+    return { acquired: true, retryAfterMs: 0 };
+  }
+
+  releaseModelSlot(owner: string) {
+    this.sql`DELETE FROM model_leases WHERE owner = ${owner}`;
+  }
+
+  pauseModelRequests(delayMs: number) {
+    const until = Date.now() + delayMs;
+    this
+      .sql`INSERT INTO model_budget VALUES (1, ${until}) ON CONFLICT(id) DO UPDATE SET next_at = max(next_at, excluded.next_at)`;
+  }
+
   acceptAlerts(
     alerts: AlertNotification[],
     sinceSeconds: number,
-    agentName: string
+    agentName: string,
+    memoryEnabled?: boolean
   ) {
     const admission = this.alertIntake.then(async () => {
       this
@@ -412,6 +465,7 @@ If the user asks to schedule a task, use the schedule tool to schedule the task.
           await admitAlert(
             {
               env: this.env,
+              memoryEnabled,
               sinceSeconds,
               agentName,
               getInvestigations: () => this.getInvestigations(),

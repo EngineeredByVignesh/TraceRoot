@@ -6,9 +6,9 @@ TOOL_API_TOKEN=dev-token
 # MODEL_PROVIDER is the selector: google, cloudflare, or openrouter.
 # For one-switch operation, uncomment/fill all provider models and credentials once.
 # Inactive provider settings are ignored; otherwise keep unused settings commented out.
-MODEL_PROVIDER=google
-GEMINI_AI_MODEL=gemini-3.5-flash
-# CLOUDFLARE_AI_MODEL=@cf/google/gemma-4-26b-a4b-it
+MODEL_PROVIDER=cloudflare
+# GEMINI_AI_MODEL=gemini-3.5-flash
+CLOUDFLARE_AI_MODEL=@cf/meta/llama-3.1-8b-instruct-fp8
 # OPENROUTER_AI_MODEL=<provider/model-id>
 # OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
 
@@ -19,6 +19,31 @@ GEMINI_AI_MODEL=gemini-3.5-flash
 # CLASSIFICATION_MODEL_PROVIDER=google
 # CLASSIFICATION_MODEL_PROVIDER_API_KEY=<classification-provider-api-key>
 
+# Automatic investigation LLM budget, shared through an existing ChatAgent instance.
+# Applies to correlation and automatic RCA requests, not interactive chat/embeddings.
+LLM_COORDINATOR_NAME=llm-coordinator
+LLM_MAX_CONCURRENCY=2
+LLM_MIN_INTERVAL_MS=1000
+LLM_REQUEST_TIMEOUT_MS=60000
+LLM_QUEUE_TIMEOUT_MS=60000
+LLM_QUEUE_POLL_MS=250
+LLM_FAILURE_COOLDOWN_MS=30000
+
+# Correlation confidence is model-reported certainty, not measured accuracy.
+CORRELATION_MIN_CONFIDENCE=0.80
+# FP8 rejects native JSON Schema: prompt-json accepts JSON or one fenced JSON block.
+# json-schema requires native schema support. Both modes validate locally with Zod.
+CORRELATION_OUTPUT_MODE=prompt-json
+# Positive merges cannot cross known values of these labels. Use none to disable.
+# Strict component scope suits independent lab incidents, not cross-component cascades.
+CORRELATION_SCOPE_LABELS=namespace,service,component
+CORRELATION_MAX_OUTPUT_TOKENS=512
+
+# The Workflow owns RCA retries; SDK retries are disabled.
+RCA_MAX_OUTPUT_TOKENS=1600
+RCA_MAX_RETRIES=1
+RCA_RETRY_DELAY_SECONDS=30
+
 # Incident memory embedding provider.
 # Use EMBEDDING_PROVIDER=google for Gemini embeddings or cloudflare for Workers AI embeddings.
 EMBEDDING_PROVIDER=google
@@ -26,8 +51,15 @@ GEMINI_EMBEDDING_MODEL=gemini-embedding-001
 # CLOUDFLARE_EMBEDDING_MODEL=@cf/google/embeddinggemma-300m
 
 # Vectorize memory. Dimensions must match the index and selected embedding model.
+# Set false to skip historical retrieval; memory writes remain available for seeding.
+# INCIDENT_MEMORY_ENABLED=true
 EMBEDDING_DIMENSIONS=768
 INCIDENT_MEMORY_NAMESPACE=incident-memory
+INCIDENT_MEMORY_MIN_SCORE=0.65
+INCIDENT_MEMORY_TOP_K=5
+# Enable targeted historical RCA reuse only for memories with explicit reuseConditions.
+# INCIDENT_MEMORY_REUSE_ENABLED=true
+# INCIDENT_MEMORY_REUSE_MIN_SCORE=0.90
 
 # Provider credentials.
 GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
@@ -45,3 +77,6 @@ GOOGLE_GENERATIVE_AI_API_KEY=<google-api-key>
 # ALERT_WEBHOOK_ALERT_NAMES=DemoServiceHighErrorRate,DemoServiceHighLatency
 # ALERT_WEBHOOK_AGENT_NAME=default
 # ALERT_INVESTIGATION_SINCE_SECONDS=1800
+
+# Local benchmark-only authenticated API. Leave disabled outside benchmark runs.
+# BENCHMARK_ENABLED=false

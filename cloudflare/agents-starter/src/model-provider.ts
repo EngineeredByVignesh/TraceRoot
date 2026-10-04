@@ -6,7 +6,10 @@ import { gatewaySettings } from "./ai-gateway";
 
 export function createClassificationModel(env: Env, sessionAffinity: string) {
   if (!env.CLASSIFICATION_AI_MODEL?.trim()) {
-    return createChatModel(env, sessionAffinity);
+    return createChatModel(env, sessionAffinity, {
+      operation: "correlation",
+      alertId: sessionAffinity
+    });
   }
   const provider = requireProvider(
     {
@@ -32,23 +35,37 @@ export function createClassificationModel(env: Env, sessionAffinity: string) {
         : {}),
       ...(provider === "cloudflare" ? { CLOUDFLARE_AI_MODEL: model } : {})
     },
-    sessionAffinity
+    sessionAffinity,
+    { operation: "correlation", alertId: sessionAffinity }
   );
 }
 
-export function createChatModel(env: Env, sessionAffinity: string) {
+export function createChatModel(
+  env: Env,
+  sessionAffinity: string,
+  metadata: Record<string, string> = {}
+) {
   const gateway = gatewaySettings(env);
+  const headers = gateway
+    ? {
+        ...gateway.headers,
+        "cf-aig-metadata": JSON.stringify(metadata),
+        "cf-aig-skip-cache": "true"
+      }
+    : undefined;
   switch (requireProvider(env, "MODEL_PROVIDER")) {
     case "cloudflare":
       return createWorkersAI({
         binding: env.AI,
-        gateway: gateway ? { id: gateway.id } : undefined
+        gateway: gateway
+          ? { id: gateway.id, metadata, skipCache: true }
+          : undefined
       })(requireEnv(env, "CLOUDFLARE_AI_MODEL"), { sessionAffinity });
     case "google":
       return createGoogleGenerativeAI({
         apiKey: requireEnv(env, "GOOGLE_GENERATIVE_AI_API_KEY"),
         baseURL: gateway ? `${gateway.baseURL}/google-ai-studio/v1` : undefined,
-        headers: gateway?.headers
+        headers
       })(requireEnv(env, "GEMINI_AI_MODEL"));
     case "openrouter":
       return createOpenRouter({
@@ -56,7 +73,7 @@ export function createChatModel(env: Env, sessionAffinity: string) {
         baseURL: gateway
           ? `${gateway.baseURL}/openrouter`
           : requireEnv(env, "OPENROUTER_BASE_URL"),
-        headers: gateway?.headers
+        headers
       })(requireEnv(env, "OPENROUTER_AI_MODEL"));
   }
 }

@@ -1,0 +1,246 @@
+{
+  "runId": "b394e216",
+  "sourceFile": "d:\\MY FILES\\Downloads\\logs-2026-10-03T18_25_24.986Z.json",
+  "sourceSha256": "0212e90a4bd63acf43d36dc797a53be15af42f252a8ce49968f34bbf06a9c0db",
+  "window": {
+    "start": "2026-10-03T13:49:30.233Z",
+    "end": "2026-10-03T14:01:04.361Z"
+  },
+  "exportRecords": 287,
+  "uniqueRecords": 287,
+  "inWindow": 71,
+  "exactTextRecords": 36,
+  "excludedRecords": 251,
+  "textGeneration": {
+    "requests": 36,
+    "successful": 36,
+    "statuses": {
+      "200": 36
+    },
+    "latencyMs": {
+      "samples": 36,
+      "medianMs": 11343.5,
+      "p95Ms": 25711.5,
+      "maxMs": 28431
+    },
+    "inputTokens": 33781,
+    "outputTokens": 9333,
+    "estimatedCostUsd": 0.007802308269745669,
+    "retryCounts": [
+      0
+    ],
+    "cachedRequests": 0
+  },
+  "coverage": {
+    "withoutMemory": {
+      "expectedCorrelations": 10,
+      "recordedCorrelations": 10,
+      "completedWorkflows": 9,
+      "recordedRcas": 9
+    },
+    "withMemory": {
+      "expectedCorrelations": 10,
+      "recordedCorrelations": 8,
+      "completedWorkflows": 9,
+      "recordedRcas": 9
+    }
+  },
+  "operations": {
+    "correlation": {
+      "requests": 18,
+      "successful": 18,
+      "statuses": {
+        "200": 18
+      },
+      "latencyMs": {
+        "samples": 18,
+        "medianMs": 3808,
+        "p95Ms": 5478.349999999999,
+        "maxMs": 5707
+      },
+      "inputTokens": 9711,
+      "outputTokens": 1340,
+      "estimatedCostUsd": 0.0018569495135461911,
+      "retryCounts": [
+        0
+      ],
+      "cachedRequests": 0
+    },
+    "rca": {
+      "requests": 18,
+      "successful": 18,
+      "statuses": {
+        "200": 18
+      },
+      "latencyMs": {
+        "samples": 18,
+        "medianMs": 20444.5,
+        "p95Ms": 26449.649999999998,
+        "maxMs": 28431
+      },
+      "inputTokens": 24070,
+      "outputTokens": 7993,
+      "estimatedCostUsd": 0.0059453587561994784,
+      "retryCounts": [
+        0
+      ],
+      "cachedRequests": 0
+    }
+  },
+  "arms": {
+    "withoutMemory": {
+      "overall": {
+        "requests": 19,
+        "successful": 19,
+        "statuses": {
+          "200": 19
+        },
+        "latencyMs": {
+          "samples": 19,
+          "medianMs": 4239,
+          "p95Ms": 23156.99999999999,
+          "maxMs": 28431
+        },
+        "inputTokens": 16710,
+        "outputTokens": 4663,
+        "estimatedCostUsd": 0.0038727911822460594,
+        "retryCounts": [
+          0
+        ],
+        "cachedRequests": 0
+      },
+      "operations": {
+        "correlation": {
+          "requests": 10,
+          "successful": 10,
+          "statuses": {
+            "200": 10
+          },
+          "latencyMs": {
+            "samples": 10,
+            "medianMs": 3544,
+            "p95Ms": 4087.3499999999995,
+            "maxMs": 4239
+          },
+          "inputTokens": 5466,
+          "outputTokens": 643,
+          "estimatedCostUsd": 0.0010132436343207956,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        },
+        "rca": {
+          "requests": 9,
+          "successful": 9,
+          "statuses": {
+            "200": 9
+          },
+          "latencyMs": {
+            "samples": 9,
+            "medianMs": 19966,
+            "p95Ms": 26086.999999999996,
+            "maxMs": 28431
+          },
+          "inputTokens": 11244,
+          "outputTokens": 4020,
+          "estimatedCostUsd": 0.0028595475479252634,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        }
+      }
+    },
+    "withMemory": {
+      "overall": {
+        "requests": 17,
+        "successful": 17,
+        "statuses": {
+          "200": 17
+        },
+        "latencyMs": {
+          "samples": 17,
+          "medianMs": 17932,
+          "p95Ms": 25685.6,
+          "maxMs": 26100
+        },
+        "inputTokens": 17071,
+        "outputTokens": 4670,
+        "estimatedCostUsd": 0.003929517087499611,
+        "retryCounts": [
+          0
+        ],
+        "cachedRequests": 0
+      },
+      "operations": {
+        "correlation": {
+          "requests": 8,
+          "successful": 8,
+          "statuses": {
+            "200": 8
+          },
+          "latencyMs": {
+            "samples": 8,
+            "medianMs": 4113,
+            "p95Ms": 5612.849999999999,
+            "maxMs": 5707
+          },
+          "inputTokens": 4245,
+          "outputTokens": 697,
+          "estimatedCostUsd": 0.0008437058792253955,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        },
+        "rca": {
+          "requests": 9,
+          "successful": 9,
+          "statuses": {
+            "200": 9
+          },
+          "latencyMs": {
+            "samples": 9,
+            "medianMs": 20583,
+            "p95Ms": 25892.8,
+            "maxMs": 26100
+          },
+          "inputTokens": 12826,
+          "outputTokens": 3973,
+          "estimatedCostUsd": 0.0030858112082742155,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        }
+      }
+    }
+  },
+  "embeddingsWindowOnly": {
+    "requests": 33,
+    "successful": 33,
+    "statuses": {
+      "200": 33
+    },
+    "latencyMs": {
+      "samples": 33,
+      "medianMs": 555,
+      "p95Ms": 808.5999999999997,
+      "maxMs": 2284
+    },
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "estimatedCostUsd": 0,
+    "retryCounts": [
+      0
+    ],
+    "cachedRequests": 0
+  },
+  "warnings": [
+    "Text calls use workflow ID or run/arm alert ID metadata, not time alone. Preflight and earlier attempts are excluded.",
+    "Embedding calls have no run/arm metadata; timestamp attribution includes possible seed/search/overhead or unrelated calls. Zero logged usage/cost is missing accounting, not proof of free embeddings.",
+    "Gateway retry_count is not SDK/Workflow retries. Cost is logged estimated successful-request cost, not an audited invoice.",
+    "Memory RCA costs include all workflows, including erroneous splits; the two arms do not provide statistical evidence of generalization."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "runId": "60e43679",
+  "method": "Non-blinded qualitative spot check of failed keyword samples and different-cause cases. These observations do not override the automated scores and are not a statistically estimated factual-accuracy rate.",
+  "findings": [
+    {
+      "workflowId": "alert-f3ade0818a8bd926df0cf54ede82b7aa8d9b4af349af3542851fa83a9face4c4",
+      "finding": "With-memory different-database-cause-r2 states that the likely cause is pool exhaustion based on history, despite current authentication/permission-denied evidence and an explicit no-pool-exhaustion log. It still passes the RCA keyword rubric because the correct authentication terms also occur. The 10/10 root keyword score is not 100% factual accuracy."
+    },
+    {
+      "workflowId": "alert-3c7fe770b9334d09daa0222b2894847ef4daa1aea0c6439981dc861051ae67eb",
+      "finding": "Without-memory overlapping-r2 renderer invents NaN pre-rollout metrics; the fixture provides only current samples and no before-rollout time series. Its root keyword miss is retained rather than rescored to fit the wording."
+    },
+    {
+      "workflowId": "alert-bdf9f9c05bac0b8c40307d4db2ad91147450305e0e026e463377c3c753452a4c",
+      "finding": "Without-memory different-database-cause-r1 suggests checking APP_VERSION while fixing database credentials, without evidence that this setting controls authentication. A passing Fix keyword score does not establish a valid or executed repair."
+    }
+  ]
+}

@@ -45,8 +45,34 @@ Configure `AI_GATEWAY_BASE_URL=https://gateway.ai.cloudflare.com/v1/<account-id>
 
 This selector controls chat and RCA. `EMBEDDING_PROVIDER` and any explicitly configured `CLASSIFICATION_MODEL_PROVIDER` remain independent and unchanged.
 
+## Benchmarks
+
+The [benchmark guide](benchmarks/README.md) covers correlation, RCA and memory reuse A/B evaluation. One current dataset/config produces [results](benchmark-results.md) and raw evidence in `benchmarks/results.json`. The best prior context-enrichment run is retained under `benchmarks/baseline/`. Application timing is separate from Gateway accounting, which awaits the matching export.
+
+The separate large-scale suite uses `benchmarks/config-large.json` and `benchmarks/dataset-large.json`, saving [large results](benchmark-results-large.md) and `benchmarks/results-large.json` without overwriting the small run. It covers ten incident categories and a ten-independent-incident alert burst; see the guide for execution and Gateway export commands.
+
+Set `INCIDENT_MEMORY_ENABLED=false` in the agent's `.dev.vars` to disable historical retrieval for normal investigations. Leave it unset or set it to `true` to preserve retrieval. The benchmark runs both memory settings on isolated Workflow instances.
+
 ## Automatic Investigations
+
+Opt-in [targeted historical RCA reuse](memory-reuse.md) checks explicit reuse rules against current deployment/log evidence. Eligible matches skip three evidence calls and RCA generation; all other alerts retain the full investigation. Existing benchmark results predate this path and remain unchanged.
 
 Follow [ADR7](adrs/ADR7-alert-webhook-investigations.md#local-setup) to enable the authenticated Alertmanager webhook and configure the lab receiver. Firing alerts then start durable investigations automatically.
 
 Open `/investigations` for the live workflow list, ordered newest first by start time. Each row opens `/investigations/<id>` with live stages, retries, and RCA text. Automatic investigations appear only on these pages, without popups. The home chat remains available at `/`.
+
+### Reliability Controls
+
+Copy the automatic-investigation budget, confidence, RCA and memory settings from `.dev.vars.example` into an existing `.dev.vars`. Values are required configuration, not code fallbacks. `LLM_COORDINATOR_NAME` identifies a shared instance of the existing ChatAgent binding; no new Cloudflare resource or migration is needed. All automatic correlation/RCA calls share its persisted concurrency leases, spacing and transient-failure cooldown. Interactive chat and embedding requests are outside that budget.
+
+`CORRELATION_MIN_CONFIDENCE` gates merges, not accuracy: low-confidence positive classifications start separate investigations. `CORRELATION_OUTPUT_MODE=prompt-json` supports models without native JSON Schema; it parses strict JSON or exactly one JSON code block using a Markdown parser, then validates fields/confidence/active IDs. Formatting fallbacks are recorded; malformed JSON is never repaired. Use `json-schema` for native structured-output models. Failures remain conservative new-investigation fallbacks with diagnostic events. `RCA_MAX_RETRIES` controls Workflow retries; RCA SDK retries are disabled. Non-retryable HTTP configuration errors fail immediately. Watch `llm.request` and `correlation.failure` events for queue time, call duration, operation, IDs and failure class. Gateway metadata links RCA workflow/agent IDs and correlation alert fingerprints; benchmark IDs are embedded in those names. Gateway caching is bypassed for fresh investigations.
+
+Renderer evidence uses `/api/orders`; database evidence uses connection metrics. Alerts/logs are component-scoped and RCA recommendations must preserve unrelated incidents. Memory never falls back to another namespace; automatic history matches must pass `INCIDENT_MEMORY_MIN_SCORE` and contain both service and component labels. Tag stored histories accordingly (for example `demo-service`, `order-renderer`); untagged memories will not enter component-scoped RCA context.
+
+`CORRELATION_SCOPE_LABELS=namespace,service,component` rejects positive model merges across known values of those labels, preserving the original model confidence/decision in telemetry. Missing labels are unknown, not assumed equal or different. This is a conservative lab policy, not an LLM accuracy improvement: real cross-service/component cascades require relaxed scope labels or `none`, plus reliable dependency evidence. Confidence alone cannot stop high-confidence false merges. The benchmark reports policy rejections separately from model decisions.
+
+### Workers AI Setup
+
+Use `MODEL_PROVIDER=cloudflare` and `CLOUDFLARE_AI_MODEL=@cf/meta/llama-3.1-8b-instruct-fp8` ([model documentation](https://developers.cloudflare.com/workers-ai/models/llama-3.1-8b-instruct-fp8/)). The originally requested unsuffixed model was rejected by the live API as deprecated on 2026-05-30; FP8 is the supported variant of the same Llama 3.1 8B family. Keep classification overrides unset to use the same model. Google embeddings remain independently configured; this does not change the existing Vectorize index or re-embed production history. The AI binding is already remote: run `npx wrangler login` when OAuth has expired. Existing Gateway settings still apply through the binding ([Cloudflare setup](https://developers.cloudflare.com/ai-gateway/integrations/aig-workers-ai-binding/)). Check Workers AI quota/billing if calls report exhausted usage; this code does not enable billing or change account quotas.
+
+Rebuild/reload IncidentLab using its existing README steps to pick up component-tagged logs; old images will not contain these tags. No live lab deployment or failure injection is performed by the benchmark.

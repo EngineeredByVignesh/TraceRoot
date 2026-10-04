@@ -1,0 +1,253 @@
+{
+  "version": 4,
+  "evaluation": {
+    "causeSpecificFixPatterns": [
+      "\\b(roll.?back|revert|rotat\\w*|resiz\\w*|increas\\w*|releas\\w*|recycl\\w*|restart|reset|redeploy)\\b.{0,80}(deploy|version|credential|secret|pool|connection|service|pod|database)",
+      "(pool|credential|deploy).{0,80}\\b(resiz\\w*|increas\\w*|rotat\\w*|recycl\\w*)\\b"
+    ]
+  },
+  "cases": [
+    {
+      "id": "overlapping",
+      "expectedReuse": { "renderer": true, "database": true },
+      "failureMode": "bad_deploy,db_problem",
+      "incidents": {
+        "renderer": {
+          "expectedMemoryTitle": "Order renderer regression after rollout",
+          "rootPatterns": [
+            "bad.deploy|bad deployment|renderer.*(crash|exception)|deploy.*(regression|bug)"
+          ],
+          "remediationPatterns": ["roll.?back|revert.*deploy|disable.*bad_deploy"],
+          "memoryLabels": ["renderer"]
+        },
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust|db_problem"
+          ],
+          "remediationPatterns": [
+            "(increase|resize|tune|restore|reset|release|recycl).*pool|pool.*(increase|resize|tune|restore|reset|release|recycl)|disable.*db_problem"
+          ],
+          "memoryLabels": ["database"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "renderer",
+          "name": "DemoServiceHighErrorRate",
+          "component": "order-renderer",
+          "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+        },
+        {
+          "incident": "renderer",
+          "name": "DemoServiceHighLatency",
+          "component": "order-renderer",
+          "summary": "Order renderer /api/orders p95 latency exceeds 1 second after rollout v2."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBLatency",
+          "component": "database",
+          "summary": "orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer."
+        },
+        {
+          "incident": "renderer",
+          "name": "DemoServicePodRestarts",
+          "component": "order-renderer",
+          "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+        }
+      ]
+    },
+    {
+      "id": "database-only",
+      "behavior": "exact-recurrence",
+      "expectedReuse": { "database": true },
+      "failureMode": "db_problem",
+      "incidents": {
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust|db_problem"
+          ],
+          "remediationPatterns": [
+            "(increase|resize|tune|restore|reset|release|recycl).*pool|pool.*(increase|resize|tune|restore|reset|release|recycl)|disable.*db_problem"
+          ],
+          "memoryLabels": ["database"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBLatency",
+          "component": "database",
+          "summary": "orders-db connection acquisition latency is elevated; /api/orders is unaffected."
+        }
+      ]
+    },
+    {
+      "id": "changed-image",
+      "failureMode": "db_problem",
+      "image": "demo-service:v3",
+      "expectedReuse": { "database": false },
+      "incidents": {
+        "database": {
+          "rootPatterns": ["(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"],
+          "remediationPatterns": [
+            "(increas|resiz|tun|restor|reset|releas|recycl).*pool|pool.*(increas|resiz|tun|restor|reset|releas|recycl)"
+          ],
+          "memoryLabels": ["database"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection acquisition errors after deployment v3; inspect current evidence before reusing a historical fix."
+        }
+      ]
+    },
+    {
+      "id": "different-database-cause",
+      "failureMode": "db_auth",
+      "expectedReuse": { "database": false },
+      "incidents": {
+        "database": {
+          "rootPatterns": ["authenticat|credential|permission.denied"],
+          "forbiddenRootPatterns": [
+            "(likely|root|main|primary).{0,30}cause.{0,80}pool.{0,30}exhaust"
+          ],
+          "unsupportedFixPatterns": [
+            "\\b(resiz\\w*|increas\\w*|releas\\w*|recycl\\w*)\\b.{0,80}(pool|connection)|pool.{0,80}\\b(resiz\\w*|increas\\w*|releas\\w*|recycl\\w*)\\b"
+          ],
+          "remediationPatterns": [
+            "(correct|restor|updat|rotat|check|verif|fix).*credential|credential.*(correct|restor|updat|rotat|check|verif|fix)"
+          ],
+          "memoryLabels": ["database-auth"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection acquisition failures; determine the cause from current database logs."
+        }
+      ]
+    },
+    {
+      "id": "noisy-recurrence",
+      "behavior": "same-cause-noisy-wording",
+      "failureMode": "db_problem",
+      "expectedReuse": { "database": true },
+      "incidents": {
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": ["(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"],
+          "remediationPatterns": [
+            "(restor|releas|resiz|recycl).*pool|pool.*(restor|releas|resiz|recycl)"
+          ],
+          "memoryLabels": ["database"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Orders DB is grumpy again: connection checkout stalls, /api/db says 503. Other endpoints seem okay; retry messages are noisy."
+        }
+      ]
+    },
+    {
+      "id": "insufficient-evidence",
+      "behavior": "unknown-cause-safe-diagnostics",
+      "failureMode": "unknown",
+      "expectedReuse": { "database": false },
+      "incidents": {
+        "database": {
+          "expectedUnknown": true,
+          "rootPatterns": [
+            "unknown|undetermined|insufficient.{0,30}evidence|cannot.{0,30}(determine|establish)"
+          ],
+          "remediationPatterns": [
+            "(inspect|collect|check|gather|review|trace|investigate).{0,80}(log|trace|metric|connection|evidence|credential)"
+          ],
+          "memoryLabels": ["unknown"]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Intermittent /api/db failures. Diagnostic detail is missing; no recent causal change has been established."
+        }
+      ]
+    }
+  ],
+  "memories": [
+    {
+      "title": "Order renderer regression after rollout",
+      "summary": "Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.",
+      "rootCause": "Bad deployment introduced an order renderer exception and slow rendering path.",
+      "remediation": "Roll back the renderer deployment to the previous healthy version.",
+      "labels": ["renderer", "order-renderer", "demo-service"],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "order-renderer",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceHighErrorRate",
+          "DemoServiceHighLatency",
+          "DemoServicePodRestarts"
+        ],
+        "logSignatures": ["order handler exception after v2", "renderer liveness failed"],
+        "verification": [
+          "Verify /api/orders error rate and latency return to baseline.",
+          "Check the independent database incident before a whole-deployment rollback."
+        ]
+      }
+    },
+    {
+      "title": "orders-db pool exhaustion",
+      "summary": "Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.",
+      "rootCause": "Database connection pool exhaustion prevented acquiring orders-db connections.",
+      "remediation": "Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.",
+      "labels": ["database", "demo-service"],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "database",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": ["DemoServiceDBConnectionErrors", "DemoServiceDBLatency"],
+        "logSignatures": ["connection pool exhausted", "independent /api/db acquisition timeout"],
+        "conflictingLogSignatures": ["authentication failed", "permission denied"],
+        "verification": [
+          "Verify orders-db acquisition errors and latency return to baseline.",
+          "Verify the order renderer is unaffected."
+        ]
+      }
+    },
+    {
+      "title": "Unrelated image registry outage",
+      "summary": "Another service could not pull its container image.",
+      "rootCause": "Image registry was unavailable.",
+      "remediation": "Restore the registry network path.",
+      "labels": ["distractor", "registry"]
+    }
+  ]
+}

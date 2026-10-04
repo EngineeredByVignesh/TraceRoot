@@ -1,0 +1,77 @@
+{
+  "runId": "db1c3976",
+  "namespace": "benchmark-db1c3976",
+  "startedAt": "2026-10-04T09:01:45.344Z",
+  "modelProvider": "cloudflare",
+  "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+  "datasetVersion": 4,
+  "scoringVersion": 2,
+  "datasetSha256": "ca5e4e63a10a249c45df5b5c6eb87d8833be0cce2ba4b9127111927e75449251",
+  "mode": "controlled-evidence-replay",
+  "preflight": {},
+  "arms": {},
+  "errors": [
+    "Service unavailable: http://localhost:8080/healthz"
+  ],
+  "configuration": {
+    "datasetCases": [
+      {
+        "id": "overlapping",
+        "behavior": "overlapping",
+        "alerts": 5
+      },
+      {
+        "id": "database-only",
+        "behavior": "exact-recurrence",
+        "alerts": 2
+      },
+      {
+        "id": "changed-image",
+        "behavior": "changed-image",
+        "alerts": 1
+      },
+      {
+        "id": "different-database-cause",
+        "behavior": "different-database-cause",
+        "alerts": 1
+      },
+      {
+        "id": "noisy-recurrence",
+        "behavior": "same-cause-noisy-wording",
+        "alerts": 1
+      },
+      {
+        "id": "insufficient-evidence",
+        "behavior": "unknown-cause-safe-diagnostics",
+        "alerts": 1
+      }
+    ],
+    "memoryReuseEnabled": true,
+    "memoryReuseMinimumScore": 0.9,
+    "correlationMinimumConfidence": 0.8,
+    "correlationOutputMode": "prompt-json",
+    "correlationScopeLabels": "namespace,service,component",
+    "localState": "ephemeral (persistState=false)",
+    "maxConcurrency": 2,
+    "requestTimeoutMs": 60000,
+    "fixtureDelayMs": 8000,
+    "repetitions": 2,
+    "armOrders": [
+      [
+        "withoutMemory",
+        "withMemory"
+      ],
+      [
+        "withMemory",
+        "withoutMemory"
+      ]
+    ]
+  },
+  "previousRun": {
+    "runId": "60e43679",
+    "raw": "benchmarks/history/60e43679.json",
+    "scored": true
+  },
+  "finishedAt": "2026-10-04T09:01:50.552Z",
+  "toolCalls": []
+}

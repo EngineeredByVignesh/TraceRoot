@@ -1,0 +1,256 @@
+{
+  "runId": "89c2a517",
+  "sourceFile": "d:\\MY FILES\\Downloads\\logs-2026-10-04T11_54_55.108Z.json",
+  "sourceSha256": "29ce8d9bcc1abf0dc1945404ace2fcbbd59e37916966ef1d837e2c0f6950de80",
+  "window": {
+    "start": "2026-10-04T10:14:52.723Z",
+    "end": "2026-10-04T11:31:34.135Z"
+  },
+  "exportRecords": 1000,
+  "uniqueRecords": 1000,
+  "inWindow": 590,
+  "exactTextRecords": 434,
+  "excludedRecords": 566,
+  "textGeneration": {
+    "requests": 434,
+    "successful": 405,
+    "statuses": {
+      "200": 405,
+      "429": 29
+    },
+    "latencyMs": {
+      "samples": 405,
+      "medianMs": 5442,
+      "p95Ms": 12699.999999999998,
+      "maxMs": 17794
+    },
+    "inputTokens": 523016,
+    "outputTokens": 43389,
+    "estimatedCostUsd": 0.09173993071749256,
+    "retryCounts": [
+      0
+    ],
+    "cachedRequests": 0
+  },
+  "coverage": {
+    "withoutMemory": {
+      "expectedCorrelations": 116,
+      "recordedCorrelations": 112,
+      "completedWorkflows": 95,
+      "recordedRcas": 119,
+      "intentionallySkippedRcas": 0,
+      "applicationRcaAttempts": 119
+    },
+    "withMemory": {
+      "expectedCorrelations": 116,
+      "recordedCorrelations": 115,
+      "completedWorkflows": 100,
+      "recordedRcas": 88,
+      "intentionallySkippedRcas": 12,
+      "applicationRcaAttempts": 88
+    }
+  },
+  "operations": {
+    "correlation": {
+      "requests": 227,
+      "successful": 222,
+      "statuses": {
+        "200": 222,
+        "429": 5
+      },
+      "latencyMs": {
+        "samples": 222,
+        "medianMs": 3458,
+        "p95Ms": 5910.95,
+        "maxMs": 11283
+      },
+      "inputTokens": 250981,
+      "outputTokens": 12616,
+      "estimatedCostUsd": 0.041665235995774146,
+      "retryCounts": [
+        0
+      ],
+      "cachedRequests": 0
+    },
+    "rca": {
+      "requests": 207,
+      "successful": 183,
+      "statuses": {
+        "200": 183,
+        "429": 24
+      },
+      "latencyMs": {
+        "samples": 183,
+        "medianMs": 9480,
+        "p95Ms": 14197.300000000001,
+        "maxMs": 17794
+      },
+      "inputTokens": 272035,
+      "outputTokens": 30773,
+      "estimatedCostUsd": 0.0500746947217183,
+      "retryCounts": [
+        0
+      ],
+      "cachedRequests": 0
+    }
+  },
+  "arms": {
+    "withoutMemory": {
+      "overall": {
+        "requests": 231,
+        "successful": 202,
+        "statuses": {
+          "200": 202,
+          "429": 29
+        },
+        "latencyMs": {
+          "samples": 202,
+          "medianMs": 5452,
+          "p95Ms": 13372.849999999999,
+          "maxMs": 17430
+        },
+        "inputTokens": 252556,
+        "outputTokens": 23179,
+        "estimatedCostUsd": 0.04493983494914509,
+        "retryCounts": [
+          0
+        ],
+        "cachedRequests": 0
+      },
+      "operations": {
+        "correlation": {
+          "requests": 112,
+          "successful": 107,
+          "statuses": {
+            "200": 107,
+            "429": 5
+          },
+          "latencyMs": {
+            "samples": 107,
+            "medianMs": 3205,
+            "p95Ms": 5617.699999999996,
+            "maxMs": 11283
+          },
+          "inputTokens": 123692,
+          "outputTokens": 5923,
+          "estimatedCostUsd": 0.02044938091506996,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        },
+        "rca": {
+          "requests": 119,
+          "successful": 95,
+          "statuses": {
+            "200": 95,
+            "429": 24
+          },
+          "latencyMs": {
+            "samples": 95,
+            "medianMs": 9777,
+            "p95Ms": 14706.9,
+            "maxMs": 17430
+          },
+          "inputTokens": 128864,
+          "outputTokens": 17256,
+          "estimatedCostUsd": 0.024490454034075144,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        }
+      }
+    },
+    "withMemory": {
+      "overall": {
+        "requests": 203,
+        "successful": 203,
+        "statuses": {
+          "200": 203
+        },
+        "latencyMs": {
+          "samples": 203,
+          "medianMs": 5442,
+          "p95Ms": 11585.599999999999,
+          "maxMs": 17794
+        },
+        "inputTokens": 270460,
+        "outputTokens": 20210,
+        "estimatedCostUsd": 0.04680009576834737,
+        "retryCounts": [
+          0
+        ],
+        "cachedRequests": 0
+      },
+      "operations": {
+        "correlation": {
+          "requests": 115,
+          "successful": 115,
+          "statuses": {
+            "200": 115
+          },
+          "latencyMs": {
+            "samples": 115,
+            "medianMs": 3641,
+            "p95Ms": 6175.6,
+            "maxMs": 10085
+          },
+          "inputTokens": 127289,
+          "outputTokens": 6693,
+          "estimatedCostUsd": 0.021215855080704213,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        },
+        "rca": {
+          "requests": 88,
+          "successful": 88,
+          "statuses": {
+            "200": 88
+          },
+          "latencyMs": {
+            "samples": 88,
+            "medianMs": 9085.5,
+            "p95Ms": 13155.199999999997,
+            "maxMs": 17794
+          },
+          "inputTokens": 143171,
+          "outputTokens": 13517,
+          "estimatedCostUsd": 0.025584240687643166,
+          "retryCounts": [
+            0
+          ],
+          "cachedRequests": 0
+        }
+      }
+    }
+  },
+  "embeddingsWindowOnly": {
+    "requests": 155,
+    "successful": 155,
+    "statuses": {
+      "200": 155
+    },
+    "latencyMs": {
+      "samples": 155,
+      "medianMs": 514,
+      "p95Ms": 633.4999999999999,
+      "maxMs": 719
+    },
+    "inputTokens": 0,
+    "outputTokens": 0,
+    "estimatedCostUsd": 0,
+    "retryCounts": [
+      0
+    ],
+    "cachedRequests": 0
+  },
+  "warnings": [
+    "Text calls use workflow ID or run/arm alert ID metadata, not time alone. Preflight and earlier attempts are excluded.",
+    "Embedding calls have no run/arm metadata; timestamp attribution includes possible seed/search/overhead or unrelated calls. Zero logged usage/cost is missing accounting, not proof of free embeddings.",
+    "Gateway retry_count is not SDK/Workflow retries. Cost is logged estimated successful-request cost, not an audited invoice.",
+    "Memory RCA costs include all workflows, including erroneous splits; the two arms do not provide statistical evidence of generalization."
+  ]
+}

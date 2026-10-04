@@ -1,0 +1,18 @@
+{
+  "agentPort": 5173,
+  "toolApiPort": 8788,
+  "fixturePort": 8789,
+  "fixtureDelayMs": 8000,
+  "workflowTimeoutMs": 300000,
+  "pollIntervalMs": 1000,
+  "memoryIndexWaitMs": 90000,
+  "python": "python",
+  "dataset": "dataset.json",
+  "resultFile": "results.json",
+  "reportFile": "../benchmark-results.md",
+  "repetitions": 2,
+  "armOrders": [
+    ["withoutMemory", "withMemory"],
+    ["withMemory", "withoutMemory"]
+  ]
+}

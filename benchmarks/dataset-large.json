@@ -1,0 +1,1547 @@
+{
+  "version": 5,
+  "scale": "large",
+  "description": "Ten single incident alert groups, one interleaved ten-independent-incident burst, and the six unchanged v4 behavior cases. Controlled evidence replay; no physical resource failure injection.",
+  "evaluation": {
+    "causeSpecificFixPatterns": [
+      "\\b(roll.?back|revert|rotat\\w*|resiz\\w*|increas\\w*|releas\\w*|recycl\\w*|restart|reset|redeploy)\\b.{0,80}(deploy|version|credential|secret|pool|connection|service|pod|database)",
+      "(pool|credential|deploy).{0,80}\\b(resiz\\w*|increas\\w*|rotat\\w*|recycl\\w*)\\b"
+    ]
+  },
+  "cases": [
+    {
+      "id": "large-bad_deploy",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "bad_deploy",
+      "expectedReuse": {
+        "bad_deploy": true
+      },
+      "incidents": {
+        "bad_deploy": {
+          "expectedMemoryTitle": "Order renderer regression after rollout",
+          "rootPatterns": [
+            "bad.deploy|renderer.*exception|deploy.*regression"
+          ],
+          "remediationPatterns": [
+            "roll.?back|revert.*deploy"
+          ],
+          "memoryLabels": [
+            "order-renderer"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployHigh5xx",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "High5xx observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployHighLatency",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "HighLatency observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployPodRestarts",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "PodRestarts observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "order-renderer": {
+          "route": "/api/orders",
+          "errorRate": 0.65,
+          "latency": 1.1,
+          "logs": [
+            "order handler exception after v2; renderer liveness failed; bad deployment regression"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-memory_leak",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "memory_leak",
+      "expectedReuse": {
+        "memory_leak": true
+      },
+      "incidents": {
+        "memory_leak": {
+          "expectedMemoryTitle": "Worker heap leak and simulated OOM",
+          "rootPatterns": [
+            "memory.leak|heap.*(exhaust|leak)|retained.object"
+          ],
+          "remediationPatterns": [
+            "roll.?back|fix.*leak|releas.*(object|memory)"
+          ],
+          "memoryLabels": [
+            "memory-worker"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakHighMemory",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "HighMemory observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakPodOOMKilled",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "PodOOMKilled observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakPodRestarts",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "PodRestarts observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakHigh5xx",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "High5xx observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "memory-worker": {
+          "route": "/api/simulate/memory_leak",
+          "errorRate": 0.7,
+          "latency": 0.9,
+          "logs": [
+            "retained-object memory leak; heap 95% of limit; synthetic OOMKilled exit 137; restart count 4"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-cpu_saturation",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "cpu_saturation",
+      "expectedReuse": {
+        "cpu_saturation": true
+      },
+      "incidents": {
+        "cpu_saturation": {
+          "expectedMemoryTitle": "Runaway compute loop saturates CPU",
+          "rootPatterns": [
+            "(runaway|compute).*loop|cpu.*saturat"
+          ],
+          "remediationPatterns": [
+            "disabl.*(loop|comput)|cap.*concurr|limit.*concurr"
+          ],
+          "memoryLabels": [
+            "compute-worker"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHighCPU",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "HighCPU observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHighLatency",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "HighLatency observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHigh5xx",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "High5xx observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "compute-worker": {
+          "route": "/api/simulate/cpu_saturation",
+          "errorRate": 0.45,
+          "latency": 1.4,
+          "logs": [
+            "runaway compute loop; CPU utilization 98%; request rate unchanged; worker queue stalled"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-db_problem",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "db_problem",
+      "expectedReuse": {
+        "db_problem": true
+      },
+      "incidents": {
+        "db_problem": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"
+          ],
+          "remediationPatterns": [
+            "(increas|resiz|releas|restor|recycl|tun).*pool|pool.*(increas|resiz|releas|restor|recycl|tun)"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemDBConnectionErrors",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "DBConnectionErrors observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemHighLatency",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "HighLatency observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemHigh5xx",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "High5xx observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "database": {
+          "route": "/api/db",
+          "errorRate": 0.8,
+          "latency": 1.2,
+          "logs": [
+            "connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-dependency_outage",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "dependency_outage",
+      "expectedReuse": {
+        "dependency_outage": true
+      },
+      "incidents": {
+        "dependency_outage": {
+          "expectedMemoryTitle": "Payments dependency is unavailable",
+          "rootPatterns": [
+            "(dependency|payments|downstream).*(outage|unavail)|connection.refused"
+          ],
+          "remediationPatterns": [
+            "restor.*(dependency|payments)|circuit.break"
+          ],
+          "memoryLabels": [
+            "payments-client"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageDependencyErrors",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "DependencyErrors observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageHigh5xx",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "High5xx observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageHighLatency",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "HighLatency observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "payments-client": {
+          "route": "/api/simulate/dependency_outage",
+          "errorRate": 0.85,
+          "latency": 1.3,
+          "logs": [
+            "payments dependency outage; upstream connection refused; circuit breaker open; network DNS resolves normally"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-traffic_spike",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "traffic_spike",
+      "expectedReuse": {
+        "traffic_spike": true
+      },
+      "incidents": {
+        "traffic_spike": {
+          "expectedMemoryTitle": "Traffic surge overloads ingress capacity",
+          "rootPatterns": [
+            "traffic.*(spike|surge)|overload|request.*capacity"
+          ],
+          "remediationPatterns": [
+            "rate.limit|scal.*(ingress|capacity)|shed.*(load|traffic)"
+          ],
+          "memoryLabels": [
+            "ingress-worker"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighRPS",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighRPS observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighCPU",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighCPU observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighLatency",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighLatency observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHigh5xx",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "High5xx observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "ingress-worker": {
+          "route": "/api/simulate/traffic_spike",
+          "errorRate": 0.6,
+          "latency": 1.6,
+          "logs": [
+            "traffic spike 600 requests/sec versus baseline 20; ingress queue overloaded; CPU 96%; no runaway loop"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-crash_loop",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "crash_loop",
+      "expectedReuse": {
+        "crash_loop": true
+      },
+      "incidents": {
+        "crash_loop": {
+          "expectedMemoryTitle": "Worker startup configuration crash loop",
+          "rootPatterns": [
+            "(missing|invalid).*startup.*config|config.*crash|crashloop"
+          ],
+          "remediationPatterns": [
+            "(restor|fix|correct|supply|add).*config|config.*(restor|fix|correct)"
+          ],
+          "memoryLabels": [
+            "startup-worker"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopPodCrashLooping",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "PodCrashLooping observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopLowAvailableReplicas",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "LowAvailableReplicas observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopHigh5xx",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "High5xx observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "startup-worker": {
+          "route": "/api/simulate/crash_loop",
+          "errorRate": 1,
+          "latency": 0.2,
+          "logs": [
+            "CrashLoopBackOff; missing required STARTUP_CONFIG; process exit 1; available replicas 0 of 2"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-rollout_failure",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "rollout_failure",
+      "expectedReuse": {
+        "rollout_failure": true
+      },
+      "incidents": {
+        "rollout_failure": {
+          "expectedMemoryTitle": "Deployment image pull prevents rollout",
+          "rootPatterns": [
+            "image.*(tag|pull)|imagepullbackoff|rollout.*fail"
+          ],
+          "remediationPatterns": [
+            "(correct|fix|valid).*image|roll.?back"
+          ],
+          "memoryLabels": [
+            "rollout-controller"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailureDeploymentUnavailable",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "DeploymentUnavailable observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailureLowReplicas",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "LowReplicas observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailurePodRestarts",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "PodRestarts observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "rollout-controller": {
+          "route": "/api/simulate/rollout_failure",
+          "errorRate": 1,
+          "latency": 0.1,
+          "logs": [
+            "deployment ProgressDeadlineExceeded; invalid image tag v2-missing; ImagePullBackOff; available replicas 0 of 2; startup retries"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-disk_pressure",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "disk_pressure",
+      "expectedReuse": {
+        "disk_pressure": true
+      },
+      "incidents": {
+        "disk_pressure": {
+          "expectedMemoryTitle": "Storage volume exhausted by retained logs",
+          "rootPatterns": [
+            "disk.*(full|pressure)|storage.*(full|exhaust)|enospc|no.space"
+          ],
+          "remediationPatterns": [
+            "(rotat|remov|clean).*log|expand.*(storage|volume|disk)"
+          ],
+          "memoryLabels": [
+            "storage-writer"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureDiskAlmostFull",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "DiskAlmostFull observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureWriteErrors",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "WriteErrors observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureHighLatency",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "HighLatency observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "storage-writer": {
+          "route": "/api/simulate/disk_pressure",
+          "errorRate": 0.5,
+          "latency": 1.1,
+          "logs": [
+            "storage volume 97% full; retained logs consumed capacity; ENOSPC no space left on device; write errors"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-network_latency",
+      "behavior": "single-incident-alert-group",
+      "failureMode": "network_latency",
+      "expectedReuse": {
+        "network_latency": true
+      },
+      "incidents": {
+        "network_latency": {
+          "expectedMemoryTitle": "Packet loss delays shipping requests",
+          "rootPatterns": [
+            "packet.loss|network.*(latency|delay)|network.path"
+          ],
+          "remediationPatterns": [
+            "(inspect|restor|fix).*network|packet.loss.*(check|reduc|fix)"
+          ],
+          "memoryLabels": [
+            "shipping-client"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyUpstreamLatency",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "UpstreamLatency observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyRequestTimeouts",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "RequestTimeouts observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyHighLatency",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "HighLatency observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "shipping-client": {
+          "route": "/api/simulate/network_latency",
+          "errorRate": 0.4,
+          "latency": 1.8,
+          "logs": [
+            "shipping dependency healthy; network packet loss 35%; upstream RTT 1800ms; request timeout; no dependency outage"
+          ]
+        }
+      }
+    },
+    {
+      "id": "large-independent-burst",
+      "behavior": "ten-independent-simultaneous-incidents",
+      "failureMode": "bad_deploy,memory_leak,cpu_saturation,db_problem,dependency_outage,traffic_spike,crash_loop,rollout_failure,disk_pressure,network_latency",
+      "expectedReuse": {
+        "bad_deploy": true,
+        "memory_leak": true,
+        "cpu_saturation": true,
+        "db_problem": true,
+        "dependency_outage": true,
+        "traffic_spike": true,
+        "crash_loop": true,
+        "rollout_failure": true,
+        "disk_pressure": true,
+        "network_latency": true
+      },
+      "incidents": {
+        "bad_deploy": {
+          "expectedMemoryTitle": "Order renderer regression after rollout",
+          "rootPatterns": [
+            "bad.deploy|renderer.*exception|deploy.*regression"
+          ],
+          "remediationPatterns": [
+            "roll.?back|revert.*deploy"
+          ],
+          "memoryLabels": [
+            "order-renderer"
+          ]
+        },
+        "memory_leak": {
+          "expectedMemoryTitle": "Worker heap leak and simulated OOM",
+          "rootPatterns": [
+            "memory.leak|heap.*(exhaust|leak)|retained.object"
+          ],
+          "remediationPatterns": [
+            "roll.?back|fix.*leak|releas.*(object|memory)"
+          ],
+          "memoryLabels": [
+            "memory-worker"
+          ]
+        },
+        "cpu_saturation": {
+          "expectedMemoryTitle": "Runaway compute loop saturates CPU",
+          "rootPatterns": [
+            "(runaway|compute).*loop|cpu.*saturat"
+          ],
+          "remediationPatterns": [
+            "disabl.*(loop|comput)|cap.*concurr|limit.*concurr"
+          ],
+          "memoryLabels": [
+            "compute-worker"
+          ]
+        },
+        "db_problem": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"
+          ],
+          "remediationPatterns": [
+            "(increas|resiz|releas|restor|recycl|tun).*pool|pool.*(increas|resiz|releas|restor|recycl|tun)"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        },
+        "dependency_outage": {
+          "expectedMemoryTitle": "Payments dependency is unavailable",
+          "rootPatterns": [
+            "(dependency|payments|downstream).*(outage|unavail)|connection.refused"
+          ],
+          "remediationPatterns": [
+            "restor.*(dependency|payments)|circuit.break"
+          ],
+          "memoryLabels": [
+            "payments-client"
+          ]
+        },
+        "traffic_spike": {
+          "expectedMemoryTitle": "Traffic surge overloads ingress capacity",
+          "rootPatterns": [
+            "traffic.*(spike|surge)|overload|request.*capacity"
+          ],
+          "remediationPatterns": [
+            "rate.limit|scal.*(ingress|capacity)|shed.*(load|traffic)"
+          ],
+          "memoryLabels": [
+            "ingress-worker"
+          ]
+        },
+        "crash_loop": {
+          "expectedMemoryTitle": "Worker startup configuration crash loop",
+          "rootPatterns": [
+            "(missing|invalid).*startup.*config|config.*crash|crashloop"
+          ],
+          "remediationPatterns": [
+            "(restor|fix|correct|supply|add).*config|config.*(restor|fix|correct)"
+          ],
+          "memoryLabels": [
+            "startup-worker"
+          ]
+        },
+        "rollout_failure": {
+          "expectedMemoryTitle": "Deployment image pull prevents rollout",
+          "rootPatterns": [
+            "image.*(tag|pull)|imagepullbackoff|rollout.*fail"
+          ],
+          "remediationPatterns": [
+            "(correct|fix|valid).*image|roll.?back"
+          ],
+          "memoryLabels": [
+            "rollout-controller"
+          ]
+        },
+        "disk_pressure": {
+          "expectedMemoryTitle": "Storage volume exhausted by retained logs",
+          "rootPatterns": [
+            "disk.*(full|pressure)|storage.*(full|exhaust)|enospc|no.space"
+          ],
+          "remediationPatterns": [
+            "(rotat|remov|clean).*log|expand.*(storage|volume|disk)"
+          ],
+          "memoryLabels": [
+            "storage-writer"
+          ]
+        },
+        "network_latency": {
+          "expectedMemoryTitle": "Packet loss delays shipping requests",
+          "rootPatterns": [
+            "packet.loss|network.*(latency|delay)|network.path"
+          ],
+          "remediationPatterns": [
+            "(inspect|restor|fix).*network|packet.loss.*(check|reduc|fix)"
+          ],
+          "memoryLabels": [
+            "shipping-client"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployHigh5xx",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "High5xx observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakHighMemory",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "HighMemory observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHighCPU",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "HighCPU observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemDBConnectionErrors",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "DBConnectionErrors observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageDependencyErrors",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "DependencyErrors observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighRPS",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighRPS observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopPodCrashLooping",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "PodCrashLooping observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailureDeploymentUnavailable",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "DeploymentUnavailable observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureDiskAlmostFull",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "DiskAlmostFull observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyUpstreamLatency",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "UpstreamLatency observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployHighLatency",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "HighLatency observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakPodOOMKilled",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "PodOOMKilled observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHighLatency",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "HighLatency observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemHighLatency",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "HighLatency observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageHigh5xx",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "High5xx observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighCPU",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighCPU observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopLowAvailableReplicas",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "LowAvailableReplicas observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailureLowReplicas",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "LowReplicas observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureWriteErrors",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "WriteErrors observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyRequestTimeouts",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "RequestTimeouts observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "bad_deploy",
+          "name": "DemoServiceSimBadDeployPodRestarts",
+          "component": "order-renderer",
+          "route": "/api/orders",
+          "summary": "PodRestarts observed on order-renderer. Order renderer regression after rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakPodRestarts",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "PodRestarts observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "cpu_saturation",
+          "name": "DemoServiceSimCpuSaturationHigh5xx",
+          "component": "compute-worker",
+          "route": "/api/simulate/cpu_saturation",
+          "summary": "High5xx observed on compute-worker. Runaway compute loop saturates CPU; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "db_problem",
+          "name": "DemoServiceSimDbProblemHigh5xx",
+          "component": "database",
+          "route": "/api/db",
+          "summary": "High5xx observed on database. orders-db pool exhaustion; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "dependency_outage",
+          "name": "DemoServiceSimDependencyOutageHighLatency",
+          "component": "payments-client",
+          "route": "/api/simulate/dependency_outage",
+          "summary": "HighLatency observed on payments-client. Payments dependency is unavailable; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHighLatency",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "HighLatency observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "crash_loop",
+          "name": "DemoServiceSimCrashLoopHigh5xx",
+          "component": "startup-worker",
+          "route": "/api/simulate/crash_loop",
+          "summary": "High5xx observed on startup-worker. Worker startup configuration crash loop; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "rollout_failure",
+          "name": "DemoServiceSimRolloutFailurePodRestarts",
+          "component": "rollout-controller",
+          "route": "/api/simulate/rollout_failure",
+          "summary": "PodRestarts observed on rollout-controller. Deployment image pull prevents rollout; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "disk_pressure",
+          "name": "DemoServiceSimDiskPressureHighLatency",
+          "component": "storage-writer",
+          "route": "/api/simulate/disk_pressure",
+          "summary": "HighLatency observed on storage-writer. Storage volume exhausted by retained logs; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "network_latency",
+          "name": "DemoServiceSimNetworkLatencyHighLatency",
+          "component": "shipping-client",
+          "route": "/api/simulate/network_latency",
+          "summary": "HighLatency observed on shipping-client. Packet loss delays shipping requests; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "memory_leak",
+          "name": "DemoServiceSimMemoryLeakHigh5xx",
+          "component": "memory-worker",
+          "route": "/api/simulate/memory_leak",
+          "summary": "High5xx observed on memory-worker. Worker heap leak and simulated OOM; inspect current evidence. Other components are independent."
+        },
+        {
+          "incident": "traffic_spike",
+          "name": "DemoServiceSimTrafficSpikeHigh5xx",
+          "component": "ingress-worker",
+          "route": "/api/simulate/traffic_spike",
+          "summary": "High5xx observed on ingress-worker. Traffic surge overloads ingress capacity; inspect current evidence. Other components are independent."
+        }
+      ],
+      "evidence": {
+        "order-renderer": {
+          "route": "/api/orders",
+          "errorRate": 0.65,
+          "latency": 1.1,
+          "logs": [
+            "order handler exception after v2; renderer liveness failed; bad deployment regression"
+          ]
+        },
+        "memory-worker": {
+          "route": "/api/simulate/memory_leak",
+          "errorRate": 0.7,
+          "latency": 0.9,
+          "logs": [
+            "retained-object memory leak; heap 95% of limit; synthetic OOMKilled exit 137; restart count 4"
+          ]
+        },
+        "compute-worker": {
+          "route": "/api/simulate/cpu_saturation",
+          "errorRate": 0.45,
+          "latency": 1.4,
+          "logs": [
+            "runaway compute loop; CPU utilization 98%; request rate unchanged; worker queue stalled"
+          ]
+        },
+        "database": {
+          "route": "/api/db",
+          "errorRate": 0.8,
+          "latency": 1.2,
+          "logs": [
+            "connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms"
+          ]
+        },
+        "payments-client": {
+          "route": "/api/simulate/dependency_outage",
+          "errorRate": 0.85,
+          "latency": 1.3,
+          "logs": [
+            "payments dependency outage; upstream connection refused; circuit breaker open; network DNS resolves normally"
+          ]
+        },
+        "ingress-worker": {
+          "route": "/api/simulate/traffic_spike",
+          "errorRate": 0.6,
+          "latency": 1.6,
+          "logs": [
+            "traffic spike 600 requests/sec versus baseline 20; ingress queue overloaded; CPU 96%; no runaway loop"
+          ]
+        },
+        "startup-worker": {
+          "route": "/api/simulate/crash_loop",
+          "errorRate": 1,
+          "latency": 0.2,
+          "logs": [
+            "CrashLoopBackOff; missing required STARTUP_CONFIG; process exit 1; available replicas 0 of 2"
+          ]
+        },
+        "rollout-controller": {
+          "route": "/api/simulate/rollout_failure",
+          "errorRate": 1,
+          "latency": 0.1,
+          "logs": [
+            "deployment ProgressDeadlineExceeded; invalid image tag v2-missing; ImagePullBackOff; available replicas 0 of 2; startup retries"
+          ]
+        },
+        "storage-writer": {
+          "route": "/api/simulate/disk_pressure",
+          "errorRate": 0.5,
+          "latency": 1.1,
+          "logs": [
+            "storage volume 97% full; retained logs consumed capacity; ENOSPC no space left on device; write errors"
+          ]
+        },
+        "shipping-client": {
+          "route": "/api/simulate/network_latency",
+          "errorRate": 0.4,
+          "latency": 1.8,
+          "logs": [
+            "shipping dependency healthy; network packet loss 35%; upstream RTT 1800ms; request timeout; no dependency outage"
+          ]
+        }
+      }
+    },
+    {
+      "id": "overlapping",
+      "expectedReuse": {
+        "renderer": true,
+        "database": true
+      },
+      "failureMode": "bad_deploy,db_problem",
+      "incidents": {
+        "renderer": {
+          "expectedMemoryTitle": "Order renderer regression after rollout",
+          "rootPatterns": [
+            "bad.deploy|bad deployment|renderer.*(crash|exception)|deploy.*(regression|bug)"
+          ],
+          "remediationPatterns": [
+            "roll.?back|revert.*deploy|disable.*bad_deploy"
+          ],
+          "memoryLabels": [
+            "renderer"
+          ]
+        },
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust|db_problem"
+          ],
+          "remediationPatterns": [
+            "(increase|resize|tune|restore|reset|release|recycl).*pool|pool.*(increase|resize|tune|restore|reset|release|recycl)|disable.*db_problem"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "renderer",
+          "name": "DemoServiceHighErrorRate",
+          "component": "order-renderer",
+          "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+        },
+        {
+          "incident": "renderer",
+          "name": "DemoServiceHighLatency",
+          "component": "order-renderer",
+          "summary": "Order renderer /api/orders p95 latency exceeds 1 second after rollout v2."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBLatency",
+          "component": "database",
+          "summary": "orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer."
+        },
+        {
+          "incident": "renderer",
+          "name": "DemoServicePodRestarts",
+          "component": "order-renderer",
+          "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+        }
+      ]
+    },
+    {
+      "id": "database-only",
+      "behavior": "exact-recurrence",
+      "expectedReuse": {
+        "database": true
+      },
+      "failureMode": "db_problem",
+      "incidents": {
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust|db_problem"
+          ],
+          "remediationPatterns": [
+            "(increase|resize|tune|restore|reset|release|recycl).*pool|pool.*(increase|resize|tune|restore|reset|release|recycl)|disable.*db_problem"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+        },
+        {
+          "incident": "database",
+          "name": "DemoServiceDBLatency",
+          "component": "database",
+          "summary": "orders-db connection acquisition latency is elevated; /api/orders is unaffected."
+        }
+      ]
+    },
+    {
+      "id": "changed-image",
+      "failureMode": "db_problem",
+      "image": "demo-service:v3",
+      "expectedReuse": {
+        "database": false
+      },
+      "incidents": {
+        "database": {
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"
+          ],
+          "remediationPatterns": [
+            "(increas|resiz|tun|restor|reset|releas|recycl).*pool|pool.*(increas|resiz|tun|restor|reset|releas|recycl)"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection acquisition errors after deployment v3; inspect current evidence before reusing a historical fix."
+        }
+      ]
+    },
+    {
+      "id": "different-database-cause",
+      "failureMode": "db_auth",
+      "expectedReuse": {
+        "database": false
+      },
+      "incidents": {
+        "database": {
+          "rootPatterns": [
+            "authenticat|credential|permission.denied"
+          ],
+          "forbiddenRootPatterns": [
+            "(likely|root|main|primary).{0,30}cause.{0,80}pool.{0,30}exhaust"
+          ],
+          "unsupportedFixPatterns": [
+            "\\b(resiz\\w*|increas\\w*|releas\\w*|recycl\\w*)\\b.{0,80}(pool|connection)|pool.{0,80}\\b(resiz\\w*|increas\\w*|releas\\w*|recycl\\w*)\\b"
+          ],
+          "remediationPatterns": [
+            "(correct|restor|updat|rotat|check|verif|fix).*credential|credential.*(correct|restor|updat|rotat|check|verif|fix)"
+          ],
+          "memoryLabels": [
+            "database-auth"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "orders-db connection acquisition failures; determine the cause from current database logs."
+        }
+      ]
+    },
+    {
+      "id": "noisy-recurrence",
+      "behavior": "same-cause-noisy-wording",
+      "failureMode": "db_problem",
+      "expectedReuse": {
+        "database": true
+      },
+      "incidents": {
+        "database": {
+          "expectedMemoryTitle": "orders-db pool exhaustion",
+          "rootPatterns": [
+            "(connection|database|db).*pool.*(exhaust|saturat)|pool.exhaust"
+          ],
+          "remediationPatterns": [
+            "(restor|releas|resiz|recycl).*pool|pool.*(restor|releas|resiz|recycl)"
+          ],
+          "memoryLabels": [
+            "database"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Orders DB is grumpy again: connection checkout stalls, /api/db says 503. Other endpoints seem okay; retry messages are noisy."
+        }
+      ]
+    },
+    {
+      "id": "insufficient-evidence",
+      "behavior": "unknown-cause-safe-diagnostics",
+      "failureMode": "unknown",
+      "expectedReuse": {
+        "database": false
+      },
+      "incidents": {
+        "database": {
+          "expectedUnknown": true,
+          "rootPatterns": [
+            "unknown|undetermined|insufficient.{0,30}evidence|cannot.{0,30}(determine|establish)"
+          ],
+          "remediationPatterns": [
+            "(inspect|collect|check|gather|review|trace|investigate).{0,80}(log|trace|metric|connection|evidence|credential)"
+          ],
+          "memoryLabels": [
+            "unknown"
+          ]
+        }
+      },
+      "alerts": [
+        {
+          "incident": "database",
+          "name": "DemoServiceDBConnectionErrors",
+          "component": "database",
+          "summary": "Intermittent /api/db failures. Diagnostic detail is missing; no recent causal change has been established."
+        }
+      ]
+    }
+  ],
+  "memories": [
+    {
+      "title": "Order renderer regression after rollout",
+      "summary": "Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.",
+      "rootCause": "Bad deployment introduced an order renderer exception and slow rendering path.",
+      "remediation": "Roll back the renderer deployment to the previous healthy version.",
+      "labels": [
+        "renderer",
+        "order-renderer",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "order-renderer",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimBadDeployHigh5xx",
+          "DemoServiceSimBadDeployHighLatency",
+          "DemoServiceSimBadDeployPodRestarts",
+          "DemoServiceHighErrorRate",
+          "DemoServiceHighLatency",
+          "DemoServicePodRestarts"
+        ],
+        "logSignatures": [
+          "order handler exception after v2",
+          "renderer liveness failed"
+        ],
+        "verification": [
+          "Verify /api/orders error rate and latency return to baseline.",
+          "Check the independent database incident before a whole-deployment rollback."
+        ]
+      }
+    },
+    {
+      "title": "Worker heap leak and simulated OOM",
+      "summary": "Worker heap leak and simulated OOM: HighMemory, PodOOMKilled, PodRestarts, High5xx on memory-worker.",
+      "rootCause": "A retained-object memory leak exhausted the worker heap and caused OOM termination.",
+      "remediation": "Roll back the leaking build, release retained objects and verify memory stabilizes before restoring capacity.",
+      "labels": [
+        "memory-worker",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "memory-worker",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimMemoryLeakHighMemory",
+          "DemoServiceSimMemoryLeakPodOOMKilled",
+          "DemoServiceSimMemoryLeakPodRestarts",
+          "DemoServiceSimMemoryLeakHigh5xx"
+        ],
+        "logSignatures": [
+          "retained-object memory leak"
+        ],
+        "verification": [
+          "Verify memory-worker errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Runaway compute loop saturates CPU",
+      "summary": "Runaway compute loop saturates CPU: HighCPU, HighLatency, High5xx on compute-worker.",
+      "rootCause": "A runaway compute loop saturated CPU independently of request volume.",
+      "remediation": "Disable the runaway computation and cap worker concurrency; verify CPU and latency return to baseline.",
+      "labels": [
+        "compute-worker",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "compute-worker",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimCpuSaturationHighCPU",
+          "DemoServiceSimCpuSaturationHighLatency",
+          "DemoServiceSimCpuSaturationHigh5xx"
+        ],
+        "logSignatures": [
+          "runaway compute loop"
+        ],
+        "verification": [
+          "Verify compute-worker errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "orders-db pool exhaustion",
+      "summary": "Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.",
+      "rootCause": "Database connection pool exhaustion prevented acquiring orders-db connections.",
+      "remediation": "Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.",
+      "labels": [
+        "database",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "database",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimDbProblemDBConnectionErrors",
+          "DemoServiceSimDbProblemHighLatency",
+          "DemoServiceSimDbProblemHigh5xx",
+          "DemoServiceDBConnectionErrors",
+          "DemoServiceDBLatency"
+        ],
+        "logSignatures": [
+          "connection pool exhausted",
+          "independent /api/db acquisition timeout"
+        ],
+        "conflictingLogSignatures": [
+          "authentication failed",
+          "permission denied"
+        ],
+        "verification": [
+          "Verify orders-db acquisition errors and latency return to baseline.",
+          "Verify the order renderer is unaffected."
+        ]
+      }
+    },
+    {
+      "title": "Payments dependency is unavailable",
+      "summary": "Payments dependency is unavailable: DependencyErrors, High5xx, HighLatency on payments-client.",
+      "rootCause": "The payments downstream dependency was unavailable and rejected connections.",
+      "remediation": "Restore the payments dependency, use a circuit breaker and contain retries until the dependency recovers.",
+      "labels": [
+        "payments-client",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "payments-client",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimDependencyOutageDependencyErrors",
+          "DemoServiceSimDependencyOutageHigh5xx",
+          "DemoServiceSimDependencyOutageHighLatency"
+        ],
+        "logSignatures": [
+          "payments dependency outage"
+        ],
+        "verification": [
+          "Verify payments-client errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Traffic surge overloads ingress capacity",
+      "summary": "Traffic surge overloads ingress capacity: HighRPS, HighCPU, HighLatency, High5xx on ingress-worker.",
+      "rootCause": "A traffic spike exceeded ingress processing capacity and overloaded its queue.",
+      "remediation": "Rate limit excess traffic and scale ingress capacity after verifying demand and resource limits.",
+      "labels": [
+        "ingress-worker",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "ingress-worker",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimTrafficSpikeHighRPS",
+          "DemoServiceSimTrafficSpikeHighCPU",
+          "DemoServiceSimTrafficSpikeHighLatency",
+          "DemoServiceSimTrafficSpikeHigh5xx"
+        ],
+        "logSignatures": [
+          "traffic spike 600 requests/sec versus baseline 20"
+        ],
+        "verification": [
+          "Verify ingress-worker errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Worker startup configuration crash loop",
+      "summary": "Worker startup configuration crash loop: PodCrashLooping, LowAvailableReplicas, High5xx on startup-worker.",
+      "rootCause": "A missing required startup configuration caused repeated process exits and CrashLoopBackOff.",
+      "remediation": "Restore the required startup configuration and verify the worker reaches readiness without repeated exits.",
+      "labels": [
+        "startup-worker",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "startup-worker",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimCrashLoopPodCrashLooping",
+          "DemoServiceSimCrashLoopLowAvailableReplicas",
+          "DemoServiceSimCrashLoopHigh5xx"
+        ],
+        "logSignatures": [
+          "CrashLoopBackOff"
+        ],
+        "verification": [
+          "Verify startup-worker errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Deployment image pull prevents rollout",
+      "summary": "Deployment image pull prevents rollout: DeploymentUnavailable, LowReplicas, PodRestarts on rollout-controller.",
+      "rootCause": "An invalid image tag produced ImagePullBackOff and prevented the deployment rollout.",
+      "remediation": "Correct the image tag or roll back to the last available image; verify the rollout and available replicas.",
+      "labels": [
+        "rollout-controller",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "rollout-controller",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimRolloutFailureDeploymentUnavailable",
+          "DemoServiceSimRolloutFailureLowReplicas",
+          "DemoServiceSimRolloutFailurePodRestarts"
+        ],
+        "logSignatures": [
+          "deployment ProgressDeadlineExceeded"
+        ],
+        "verification": [
+          "Verify rollout-controller errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Storage volume exhausted by retained logs",
+      "summary": "Storage volume exhausted by retained logs: DiskAlmostFull, WriteErrors, HighLatency on storage-writer.",
+      "rootCause": "Retained logs filled the storage volume and caused ENOSPC write failures.",
+      "remediation": "Rotate and remove safely disposable logs or expand the storage volume; verify successful writes and free space.",
+      "labels": [
+        "storage-writer",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "storage-writer",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimDiskPressureDiskAlmostFull",
+          "DemoServiceSimDiskPressureWriteErrors",
+          "DemoServiceSimDiskPressureHighLatency"
+        ],
+        "logSignatures": [
+          "storage volume 97% full"
+        ],
+        "verification": [
+          "Verify storage-writer errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Packet loss delays shipping requests",
+      "summary": "Packet loss delays shipping requests: UpstreamLatency, RequestTimeouts, HighLatency on shipping-client.",
+      "rootCause": "Packet loss on the shipping network path caused upstream latency and request timeouts while the dependency remained healthy.",
+      "remediation": "Inspect and restore the shipping network path, contain retry pressure and verify packet loss and upstream latency.",
+      "labels": [
+        "shipping-client",
+        "demo-service"
+      ],
+      "reuseConditions": {
+        "namespace": "incident-lab",
+        "service": "demo-service",
+        "component": "shipping-client",
+        "deploymentImage": "demo-service:v2",
+        "alertNames": [
+          "DemoServiceSimNetworkLatencyUpstreamLatency",
+          "DemoServiceSimNetworkLatencyRequestTimeouts",
+          "DemoServiceSimNetworkLatencyHighLatency"
+        ],
+        "logSignatures": [
+          "shipping dependency healthy"
+        ],
+        "verification": [
+          "Verify shipping-client errors and latency return to baseline; preserve unrelated components."
+        ]
+      }
+    },
+    {
+      "title": "Unrelated image registry outage",
+      "summary": "Another service could not pull its container image.",
+      "rootCause": "Image registry was unavailable.",
+      "remediation": "Restore the registry network path.",
+      "labels": [
+        "distractor",
+        "registry"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "agentPort": 5173,
+  "toolApiPort": 8788,
+  "fixturePort": 8789,
+  "fixtureDelayMs": 8000,
+  "workflowTimeoutMs": 900000,
+  "pollIntervalMs": 1000,
+  "memoryIndexWaitMs": 90000,
+  "python": "python",
+  "dataset": "dataset-large.json",
+  "resultFile": "results-large.json",
+  "reportFile": "../benchmark-results-large.md",
+  "gatewaySummaryFile": "gateway-summary-large.json",
+  "reviewFile": "review-large.json",
+  "reportTitle": "TraceRoot Large-Scale Benchmark Results",
+  "repetitions": 2,
+  "armOrders": [
+    ["withoutMemory", "withMemory"],
+    ["withMemory", "withoutMemory"]
+  ]
+}

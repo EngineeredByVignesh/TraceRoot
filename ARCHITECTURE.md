@@ -58,16 +58,16 @@ The Worker and workflow run under Wrangler during local development or on Cloudf
 
 ## Current Functionality
 
-| Capability | Tool | What it does |
-| --- | --- | --- |
-| Deployment inspection | `getDeployments` | Returns demo-service image, annotations, environment variables, namespace, and rollout status. |
-| Active alerts | `getAlerts` | Fetches current Alertmanager alerts. |
-| Metrics analysis | `queryMetrics` | Executes an instant PromQL query for error rate, latency, traffic, or health. |
-| Log inspection | `queryLogs` | Executes LogQL over a requested lookback, returning up to 500 entries. |
-| Durable investigation | `startInvestigationWorkflow` | Starts persisted evidence collection and returns an instance ID and status. |
-| Investigation progress | `getInvestigationWorkflowStatus` | Retrieves workflow status and completed output by instance ID. |
-| Historical context | `searchSimilarIncidents` | Embeds symptoms and retrieves up to ten similar incidents with metadata and similarity scores. |
-| Save an incident | `rememberIncident` | Stores a title, summary, root cause, remediation, labels, and creation time in Vectorize. |
+| Capability             | Tool                             | What it does                                                                                   |
+| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Deployment inspection  | `getDeployments`                 | Returns demo-service image, annotations, environment variables, namespace, and rollout status. |
+| Active alerts          | `getAlerts`                      | Fetches current Alertmanager alerts.                                                           |
+| Metrics analysis       | `queryMetrics`                   | Executes an instant PromQL query for error rate, latency, traffic, or health.                  |
+| Log inspection         | `queryLogs`                      | Executes LogQL over a requested lookback, returning up to 500 entries.                         |
+| Durable investigation  | `startInvestigationWorkflow`     | Starts persisted evidence collection and returns an instance ID and status.                    |
+| Investigation progress | `getInvestigationWorkflowStatus` | Retrieves workflow status and completed output by instance ID.                                 |
+| Historical context     | `searchSimilarIncidents`         | Embeds symptoms and retrieves up to ten similar incidents with metadata and similarity scores. |
+| Save an incident       | `rememberIncident`               | Stores a title, summary, root cause, remediation, labels, and creation time in Vectorize.      |
 
 The model selects tools based on the question and streams its answer to the chat UI. Its instructions request deployment, alert, metric, and log evidence before a root-cause answer, and historical searches early in investigations. These are model instructions, rather than a mandatory execution sequence. Each chat response is bounded to 20 model steps.
 
@@ -110,9 +110,9 @@ Scheduling supports creating, listing, and cancelling tasks. Execution currently
 
 ## Repository Ownership
 
-| Repository | Owns |
-| --- | --- |
-| TraceRoot | Agent UI/runtime, workflow, incident memory integration, tools-api, and ADRs. |
+| Repository  | Owns                                                                                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| TraceRoot   | Agent UI/runtime, workflow, incident memory integration, tools-api, and ADRs.                            |
 | IncidentLab | Demo application, Docker image definition, Kubernetes manifests, and observability installation runbook. |
 
 See the [runbook](README.md) for local startup and [ADRs](adrs/ADR2-cloudflare-investigation-agent.md) for configuration decisions and upstream setup.

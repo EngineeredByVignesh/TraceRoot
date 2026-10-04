@@ -21,13 +21,23 @@ async function loadSource(path, overrides = {}) {
   for (const [, name] of imports) {
     const url =
       overrides[name] ??
-      (name === "./investigation-progress"
-        ? await loadSource("../src/investigation-progress.ts")
-        : name === "./config"
-          ? await loadSource("../src/config.ts")
-          : name === "./ai-gateway"
-            ? await loadSource("../src/ai-gateway.ts")
-            : import.meta.resolve(name));
+      (name === "./llm-budget"
+        ? "data:text/javascript,export const errorStatus = error => error?.statusCode; export const modelErrorMessage = (_env,error) => error.message; export const withModelBudget = async (_env, _operation, _id, execute) => execute(new AbortController().signal);"
+        : name === "./model-provider"
+          ? "data:text/javascript,export const createChatModel = () => ({}); export const createClassificationModel = () => ({});"
+          : name === "./alert-correlation"
+            ? await loadSource("../src/alert-correlation.ts")
+            : name === "./memory-reuse"
+              ? await loadSource("../src/memory-reuse.ts")
+              : name === "./investigation-evidence"
+                ? await loadSource("../src/investigation-evidence.ts")
+                : name === "./investigation-progress"
+                  ? await loadSource("../src/investigation-progress.ts")
+                  : name === "./config"
+                    ? await loadSource("../src/config.ts")
+                    : name === "./ai-gateway"
+                      ? await loadSource("../src/ai-gateway.ts")
+                      : import.meta.resolve(name));
     resolved = resolved.replaceAll(`from "${name}"`, `from "${url}"`);
   }
   return `data:text/javascript;base64,${Buffer.from(resolved).toString("base64")}`;
@@ -35,6 +45,8 @@ async function loadSource(path, overrides = {}) {
 
 const { handleAlertWebhook, alertWorkflowId } = await import(
   await loadSource("../src/alert-webhook.ts", {
+    "./incident-memory":
+      "data:text/javascript,export const rememberIncident = async () => ({}); export const searchSimilarIncidents = async () => ({});",
     agents: `data:text/javascript,export const getAgentByName = async (binding) => binding;`
   })
 );
@@ -120,7 +132,11 @@ test("classification model overrides are optional and provider-specific", async 
     assert.equal(selected.provider, provider);
     assert.equal(selected.model, `${provider}-model`);
     if (provider === "cloudflare") {
-      assert.deepEqual(selected.options.gateway, { id: "shared-gateway" });
+      assert.deepEqual(selected.options.gateway, {
+        id: "shared-gateway",
+        metadata: {},
+        skipCache: true
+      });
     } else {
       assert.equal(selected.options.apiKey, `${provider}-key`);
       assert.equal(
@@ -160,7 +176,11 @@ test("classification model overrides are optional and provider-specific", async 
     },
     "session"
   );
-  assert.deepEqual(workers.options.gateway, { id: "shared-gateway" });
+  assert.deepEqual(workers.options.gateway, {
+    id: "shared-gateway",
+    metadata: {},
+    skipCache: true
+  });
   assert.equal(workers.options.binding, env.AI);
   assert.equal(
     createChatModel(
@@ -257,12 +277,305 @@ test("classification model overrides are optional and provider-specific", async 
     "cloudflare"
   );
 });
+
+test("correlation uses compact context and rejects low-confidence merges", async () => {
+  const stub = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const { correlateAlert } = await import(
+    await loadSource("../src/alert-correlation.ts", {
+      ai: stub(
+        "export const generateText = async () => ({}); export const generateObject = async options => { globalThis.compactCorrelationOptions = options; return {object: {correlated: true, investigationId: 'active', confidence: 0.6, reason: 'Weak evidence'}}; };"
+      ),
+      "./model-provider": stub(
+        "export const createClassificationModel = () => ({});"
+      )
+    })
+  );
+  try {
+    const result = await correlateAlert(
+      {
+        CORRELATION_MIN_CONFIDENCE: "0.8",
+        CORRELATION_OUTPUT_MODE: "json-schema",
+        CORRELATION_SCOPE_LABELS: "none",
+        CORRELATION_MAX_OUTPUT_TOKENS: "512"
+      },
+      alert,
+      [
+        {
+          id: "active",
+          startedAt: alert.startsAt,
+          alertName: alert.labels.alertname,
+          report: "DO NOT SEND THIS LARGE REPORT",
+          alerts: [{ alert }]
+        }
+      ]
+    );
+    assert.equal(result.correlated, false);
+    assert.equal(result.investigationId, null);
+    assert.equal(result.outcome, "low-confidence");
+    assert.equal(result.modelCorrelated, true);
+    assert.equal(result.modelConfidence, 0.6);
+    assert.doesNotMatch(
+      globalThis.compactCorrelationOptions.prompt,
+      /LARGE REPORT/
+    );
+    assert.equal(globalThis.compactCorrelationOptions.maxRetries, 0);
+  } finally {
+    delete globalThis.compactCorrelationOptions;
+  }
+});
+
+test("correlation parses one fenced JSON block without repairing malformed data", async () => {
+  const { parseCorrelationText } = await import(
+    await loadSource("../src/alert-correlation.ts")
+  );
+  const object = {
+    correlated: false,
+    investigationId: null,
+    confidence: 0.9,
+    reason: "Independent component"
+  };
+  assert.deepEqual(parseCorrelationText(JSON.stringify(object)), {
+    object,
+    formatFallback: false
+  });
+  assert.deepEqual(
+    parseCorrelationText(
+      `Here is the result:\n\n\`\`\`json\n${JSON.stringify(object)}\n\`\`\``
+    ),
+    { object, formatFallback: true }
+  );
+  assert.throws(() =>
+    parseCorrelationText('```json\n{"correlated":false,}\n```')
+  );
+  assert.throws(
+    () => parseCorrelationText("```json\n{}\n```\n```json\n{}\n```"),
+    /exactly one/
+  );
+  assert.throws(
+    () => parseCorrelationText('Here is JSON: {"correlated":false}'),
+    /exactly one/
+  );
+});
+
+test("scope policy rejects a high-confidence cross-component merge without rewriting the model decision", async () => {
+  const stub = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const { correlateAlert, conflictingScope } = await import(
+    await loadSource("../src/alert-correlation.ts", {
+      ai: stub(
+        "export const generateText = async () => ({}); export const generateObject = async () => ({object:{correlated:true,investigationId:'renderer',confidence:0.99,reason:'Shared deployment'}});"
+      )
+    })
+  );
+  const env = {
+    CORRELATION_OUTPUT_MODE: "json-schema",
+    CORRELATION_MIN_CONFIDENCE: "0.8",
+    CORRELATION_MAX_OUTPUT_TOKENS: "512",
+    CORRELATION_SCOPE_LABELS: "namespace,service,component"
+  };
+  const incoming = {
+    ...alert,
+    labels: {
+      ...alert.labels,
+      namespace: "lab",
+      service: "demo",
+      component: "database"
+    }
+  };
+  const target = {
+    id: "renderer",
+    alerts: [
+      {
+        alert: {
+          ...incoming,
+          labels: { ...incoming.labels, component: "renderer" }
+        }
+      }
+    ]
+  };
+  assert.deepEqual(conflictingScope(env, incoming, target), ["component"]);
+  const decision = await correlateAlert(env, incoming, [target]);
+  assert.equal(decision.correlated, false);
+  assert.equal(decision.investigationId, null);
+  assert.equal(decision.outcome, "scope-rejected");
+  assert.equal(decision.modelCorrelated, true);
+  assert.equal(decision.modelConfidence, 0.99);
+  assert.deepEqual(
+    conflictingScope(
+      { ...env, CORRELATION_SCOPE_LABELS: "none" },
+      incoming,
+      target
+    ),
+    []
+  );
+  assert.deepEqual(
+    conflictingScope(
+      env,
+      { ...incoming, labels: { namespace: "lab" } },
+      target
+    ),
+    []
+  );
+});
+
+test("evidence scopes database and renderer queries with escaped label values", async () => {
+  const { evidenceQueries, scopeAlerts } = await import(
+    await loadSource("../src/investigation-evidence.ts")
+  );
+  const db = {
+    ...alert,
+    labels: {
+      namespace: "incident-lab",
+      service: "demo-service",
+      component: "database",
+      database: 'orders"db'
+    }
+  };
+  const queries = evidenceQueries(db);
+  assert.match(queries.errorRate, /demo_service_db_connections_total/);
+  assert.match(queries.errorRate, /result="error"/);
+  assert.match(
+    queries.latency,
+    /demo_service_db_connection_duration_seconds_bucket/
+  );
+  assert.ok(queries.errorRate.includes('database="orders\\"db"'));
+  assert.match(queries.logs, /component=database/);
+  assert.match(
+    evidenceQueries({
+      ...db,
+      labels: { ...db.labels, component: "order-renderer" }
+    }).errorRate,
+    /route="\/api\/orders"/
+  );
+  const scoped = scopeAlerts(
+    [db, { ...db, labels: { ...db.labels, component: "order-renderer" } }],
+    db
+  );
+  assert.equal(scoped.related.length, 1);
+  assert.equal(scoped.unrelatedCount, 1);
+  const simulated = evidenceQueries({
+    ...db,
+    labels: { ...db.labels, component: "storage-writer", route: "/api/simulate/disk_pressure" }
+  });
+  assert.match(simulated.errorRate, /route="\/api\/simulate\/disk_pressure"/);
+  assert.match(simulated.latency, /route="\/api\/simulate\/disk_pressure"/);
+  assert.match(simulated.logs, /component=storage-writer/);
+});
+
+test("memory enforces namespace, relevance score and all scope labels without global fallback", async () => {
+  const stub = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const { searchSimilarIncidents } = await import(
+    await loadSource("../src/incident-memory.ts", {
+      ai: stub("export const embed = async () => ({embedding:[1,2]});"),
+      "@ai-sdk/google": stub(
+        "export const createGoogleGenerativeAI = () => ({embedding: () => ({})});"
+      )
+    })
+  );
+  let calls = 0;
+  const env = {
+    EMBEDDING_PROVIDER: "google",
+    EMBEDDING_DIMENSIONS: "2",
+    GEMINI_EMBEDDING_MODEL: "embedding",
+    GOOGLE_GENERATIVE_AI_API_KEY: "test",
+    INCIDENT_MEMORY_NAMESPACE: "benchmark-test",
+    INCIDENT_MEMORY_MIN_SCORE: "0.65",
+    INCIDENT_MEMORY: {
+      query: async (_vector, options) => {
+        calls++;
+        assert.equal(options.namespace, "benchmark-test");
+        return {
+          count: 3,
+          matches: [
+            {
+              id: "relevant",
+              score: 0.9,
+              metadata: { labels: ["database", "demo-service"] }
+            },
+            {
+              id: "wrong-component",
+              score: 0.99,
+              metadata: { labels: ["registry", "demo-service"] }
+            },
+            {
+              id: "weak",
+              score: 0.4,
+              metadata: { labels: ["database", "demo-service"] }
+            }
+          ]
+        };
+      }
+    }
+  };
+  const results = await searchSimilarIncidents(env, "pool issue", 5, {
+    labels: ["database", "demo-service"]
+  });
+  assert.deepEqual(
+    results.matches.map((match) => match.id),
+    ["relevant"]
+  );
+  assert.equal(results.filteredCount, 2);
+  env.INCIDENT_MEMORY.query = async () => {
+    calls++;
+    return { count: 0, matches: [] };
+  };
+  assert.equal((await searchSimilarIncidents(env, "no match", 5)).count, 0);
+  assert.equal(calls, 2);
+});
+
+test("shared model budget queues, releases failed leases and cools down transient errors", async () => {
+  const stub = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const { withModelBudget, errorStatus } = await import(
+    await loadSource("../src/llm-budget.ts", {
+      agents: stub("export const getAgentByName = async binding => binding;")
+    })
+  );
+  let acquired = 0,
+    released = 0,
+    paused = 0;
+  const env = {
+    LLM_COORDINATOR_NAME: "test-coordinator",
+    LLM_REQUEST_TIMEOUT_MS: "1000",
+    LLM_QUEUE_TIMEOUT_MS: "1000",
+    LLM_QUEUE_POLL_MS: "50",
+    LLM_FAILURE_COOLDOWN_MS: "1000",
+    ChatAgent: {
+      acquireModelSlot: async () => ({
+        acquired: ++acquired > 1,
+        retryAfterMs: 0
+      }),
+      releaseModelSlot: async () => released++,
+      pauseModelRequests: async () => paused++
+    }
+  };
+  assert.equal(
+    await withModelBudget(env, "test", "id", async (signal) => {
+      assert.equal(signal.aborted, false);
+      return "ok";
+    }),
+    "ok"
+  );
+  assert.equal(acquired, 2);
+  assert.equal(released, 1);
+  await assert.rejects(
+    withModelBudget(env, "test", "id", async () => {
+      throw Object.assign(new Error("limited"), { statusCode: 429 });
+    }),
+    /limited/
+  );
+  assert.equal(released, 2);
+  assert.equal(paused, 1);
+  assert.equal(errorStatus({ lastError: { statusCode: 503 } }), 503);
+});
 test("alert admission correlates active incidents, deduplicates retries, and fails open", async () => {
   const moduleUrl = (source) =>
     `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
   const correlationUrl = await loadSource("../src/alert-correlation.ts", {
     ai: moduleUrl(
-      "export const generateObject = async () => { globalThis.correlationTest.calls++; if (globalThis.correlationTest.error) throw new Error('unavailable'); return {object: globalThis.correlationTest.result}; };"
+      "export const generateText = async () => ({}); export const generateObject = async () => { globalThis.correlationTest.calls++; if (globalThis.correlationTest.error) throw new Error('unavailable'); return {object: globalThis.correlationTest.result}; };"
     ),
     "./model-provider": moduleUrl(
       "export const createClassificationModel = () => ({});"
@@ -290,6 +603,10 @@ test("alert admission correlates active incidents, deduplicates retries, and fai
   const saved = new Map();
   const context = {
     env: {
+      CORRELATION_MIN_CONFIDENCE: "0.8",
+      CORRELATION_OUTPUT_MODE: "json-schema",
+      CORRELATION_SCOPE_LABELS: "none",
+      CORRELATION_MAX_OUTPUT_TOKENS: "512",
       INVESTIGATION_WORKFLOW: {
         createBatch: async () => {
           creates++;
@@ -436,6 +753,92 @@ test("authentication and disabled flag prevent Workflow creation", async () => {
     503
   );
   assert.equal(f.calls(), 0);
+});
+
+test("memory disabled avoids embeddings and Vectorize, and benchmark API is opt-in", async () => {
+  const moduleUrl = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const { searchSimilarIncidents } = await import(
+    await loadSource("../src/incident-memory.ts", {
+      ai: moduleUrl(
+        "export const embed = async () => { throw new Error('embedding must not run'); };"
+      ),
+      "@ai-sdk/google": moduleUrl(
+        "export const createGoogleGenerativeAI = () => { throw new Error('provider must not initialize'); };"
+      )
+    })
+  );
+  assert.deepEqual(
+    await searchSimilarIncidents(
+      { INCIDENT_MEMORY_ENABLED: "false" },
+      "test",
+      5
+    ),
+    { count: 0, matches: [], disabled: true }
+  );
+  const f = fixture();
+  const response = await handleAlertWebhook(
+    new Request("http://localhost/api/alerts/benchmark", {
+      method: "POST",
+      headers: { authorization: "Bearer test-secret" },
+      body: JSON.stringify({ operation: "search", query: "test" })
+    }),
+    f.env
+  );
+  assert.equal(response.status, 404);
+  const enabled = {
+    ...f.env,
+    BENCHMARK_ENABLED: "true",
+    INCIDENT_MEMORY_NAMESPACE: "benchmark-test"
+  };
+  for (const [body, expected] of [
+    ["{", 400],
+    ["x".repeat(65537), 413]
+  ]) {
+    const invalid = await handleAlertWebhook(
+      new Request("http://localhost/api/alerts/benchmark", {
+        method: "POST",
+        headers: { authorization: "Bearer test-secret" },
+        body
+      }),
+      enabled
+    );
+    assert.equal(invalid.status, expected);
+  }
+  const unsafe = await handleAlertWebhook(
+    new Request("http://localhost/api/alerts/benchmark", {
+      method: "POST",
+      headers: { authorization: "Bearer test-secret" },
+      body: JSON.stringify({ operation: "search", query: "test" })
+    }),
+    { ...enabled, INCIDENT_MEMORY_NAMESPACE: "incident-memory" }
+  );
+  assert.equal(unsafe.status, 400);
+});
+
+test("isolated benchmark accepts a 32-alert burst and rejects batches over 50", async () => {
+  let admitted = 0;
+  const env = {
+    ...fixture().env,
+    BENCHMARK_ENABLED: "true",
+    INCIDENT_MEMORY_NAMESPACE: "benchmark-test",
+    ALERT_INVESTIGATION_SINCE_SECONDS: "1800",
+    ChatAgent: {
+      acceptAlerts: async (alerts) => { admitted = alerts.length; return { workflows: [], correlations: [] }; }
+    }
+  };
+  for (const [count, expected] of [[32, 202], [51, 400]]) {
+    const response = await handleAlertWebhook(new Request("http://localhost/api/alerts/benchmark", {
+      method: "POST",
+      headers: { authorization: "Bearer test-secret" },
+      body: JSON.stringify({
+        operation: "run", agentName: "benchmark-large-burst", memoryEnabled: true,
+        alerts: Array.from({ length: count }, (_, index) => ({ ...alert, fingerprint: `burst-${index}` }))
+      })
+    }), env);
+    assert.equal(response.status, expected);
+  }
+  assert.equal(admitted, 32);
 });
 
 test("live panel renders stages, retry details, reports, and disconnected state", async () => {
@@ -638,10 +1041,347 @@ test("authenticated status returns completed report", async () => {
   assert.equal((await response.json()).output.report, "RCA");
 });
 
+test("memory reuse requires exact scope, fresh evidence and one unambiguous eligible record", async () => {
+  const { selectReusableIncident, evaluateMemoryReuse, reusedIncidentReport } =
+    await import(await loadSource("../src/memory-reuse.ts"));
+  const now = Date.now();
+  const conditions = {
+    namespace: "incident-lab",
+    service: "demo-service",
+    component: "database",
+    deploymentImage: "demo-service:v2",
+    alertNames: ["DBConnectionErrors"],
+    logSignatures: ["connection pool exhausted"],
+    verification: ["Check database acquisition error rate returns to baseline."]
+  };
+  const match = {
+    id: "historical-db",
+    score: 0.96,
+    metadata: {
+      rootCause: "Pool exhausted",
+      remediation: "Inspect leaked connections",
+      reuseConditions: JSON.stringify(conditions)
+    }
+  };
+  const input = {
+    history: { matches: [match] },
+    alert: {
+      ...alert,
+      startsAt: new Date(now - 1000).toISOString(),
+      labels: {
+        alertname: "DBConnectionErrors",
+        namespace: "incident-lab",
+        service: "demo-service",
+        component: "database"
+      }
+    },
+    deployment: {
+      namespace: "incident-lab",
+      name: "demo-service",
+      image: "demo-service:v2"
+    },
+    logs: {
+      status: "success",
+      data: {
+        result: [
+          {
+            stream: {
+              namespace: "incident-lab",
+              app_kubernetes_io_name: "demo-service"
+            },
+            values: [
+              [
+                String(BigInt(now) * 1000000n),
+                "ERROR component=database connection pool exhausted"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    minimumScore: 0.9,
+    now
+  };
+  const selected = selectReusableIncident(input);
+  assert.equal(
+    selectReusableIncident({
+      ...input,
+      alert: {
+        ...input.alert,
+        annotations: {
+          summary: "Noisy checkout failures again, database is grumpy."
+        }
+      }
+    }).id,
+    "historical-db"
+  );
+  assert.equal(
+    evaluateMemoryReuse(input).reason,
+    "current-evidence-satisfies-reuse-conditions"
+  );
+  assert.equal(
+    evaluateMemoryReuse({
+      ...input,
+      deployment: { ...input.deployment, image: "demo-service:v3" }
+    }).reason,
+    "deployment-image-mismatch"
+  );
+  assert.equal(
+    evaluateMemoryReuse({
+      ...input,
+      history: { matches: [{ ...match, score: 0.85 }] }
+    }).reason,
+    "below-retrieval-threshold"
+  );
+  assert.equal(
+    evaluateMemoryReuse({
+      ...input,
+      history: { matches: [match, { ...match, id: "second" }] }
+    }).reason,
+    "ambiguous-reusable-matches"
+  );
+  const conflict = {
+    ...input,
+    history: {
+      matches: [
+        {
+          ...match,
+          metadata: {
+            ...match.metadata,
+            reuseConditions: JSON.stringify({
+              ...conditions,
+              conflictingLogSignatures: ["authentication failed"]
+            })
+          }
+        }
+      ]
+    },
+    logs: {
+      ...input.logs,
+      data: {
+        result: [
+          {
+            ...input.logs.data.result[0],
+            values: [
+              [
+                String(BigInt(now) * 1000000n),
+                "ERROR component=database connection pool exhausted; authentication failed"
+              ]
+            ]
+          }
+        ]
+      }
+    }
+  };
+  assert.equal(evaluateMemoryReuse(conflict).candidate, null);
+  assert.equal(
+    evaluateMemoryReuse(conflict).reason,
+    "conflicting-current-logs"
+  );
+  assert.equal(selected.id, "historical-db");
+  const report = reusedIncidentReport(selected);
+  assert.match(report, /Historical hypothesis/);
+  assert.deepEqual(report.match(/^## .+$/gm), [
+    "## RCA",
+    "## Summary",
+    "## Fix"
+  ]);
+  for (const variant of [
+    { history: { matches: [{ ...match, score: 0.85 }] } },
+    { history: { matches: [match, { ...match, id: "ambiguous" }] } },
+    {
+      history: {
+        matches: [
+          {
+            ...match,
+            metadata: { ...match.metadata, reuseConditions: "invalid" }
+          }
+        ]
+      }
+    },
+    { history: { unavailable: true } },
+    { deployment: { ...input.deployment, image: "demo-service:v3" } },
+    {
+      alert: {
+        ...input.alert,
+        labels: { ...input.alert.labels, component: "order-renderer" }
+      }
+    },
+    { alert: { ...input.alert, startsAt: new Date(now + 1).toISOString() } },
+    { logs: { status: "success", data: { result: [] } } },
+    {
+      logs: {
+        ...input.logs,
+        data: {
+          result: [
+            {
+              ...input.logs.data.result[0],
+              values: [
+                [
+                  String(BigInt(now - 2000) * 1000000n),
+                  "ERROR component=database connection pool exhausted"
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ])
+    assert.equal(selectReusableIncident({ ...input, ...variant }), null);
+});
+
+test("Workflow reuse skips RCA and three tools; disabled or mismatched memory falls back", async () => {
+  const moduleUrl = (source) =>
+    `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
+  const now = Date.now();
+  const conditions = {
+    namespace: "incident-lab",
+    service: "demo-service",
+    component: "database",
+    deploymentImage: "demo-service:v2",
+    alertNames: ["DBConnectionErrors"],
+    logSignatures: ["connection pool exhausted"],
+    verification: ["Check current database error rate."]
+  };
+  const state = (globalThis.reuseWorkflowTest = {
+    tools: [],
+    modelCalls: 0,
+    memoryCalls: 0,
+    published: [],
+    deployment: {
+      namespace: "incident-lab",
+      name: "demo-service",
+      image: "demo-service:v2"
+    },
+    logs: {
+      status: "success",
+      data: {
+        result: [
+          {
+            stream: {
+              namespace: "incident-lab",
+              app_kubernetes_io_name: "demo-service"
+            },
+            values: [
+              [
+                String(BigInt(now) * 1000000n),
+                "ERROR component=database connection pool exhausted"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    history: {
+      count: 1,
+      matches: [
+        {
+          id: "db-history",
+          score: 0.95,
+          metadata: {
+            rootCause: "Pool exhaustion",
+            remediation: "Inspect connections",
+            reuseConditions: JSON.stringify(conditions)
+          }
+        }
+      ]
+    }
+  });
+  const { InvestigationWorkflow } = await import(
+    await loadSource("../src/investigation-workflow.ts", {
+      "cloudflare:workers": moduleUrl(
+        "export class WorkflowEntrypoint { constructor(env) { this.env = env; } }"
+      ),
+      "cloudflare:workflows": moduleUrl(
+        "export class NonRetryableError extends Error {}"
+      ),
+      "./incident-tools": moduleUrl(
+        `const s = () => globalThis.reuseWorkflowTest; export async function getDeployments() {s().tools.push('deployment'); return s().deployment;} export async function queryLogs() {s().tools.push('logs'); return s().logs;} export async function getAlerts() {s().tools.push('alerts'); return [];} export async function queryMetrics() {s().tools.push('metrics'); return {};}`
+      ),
+      "./incident-memory": moduleUrl(
+        "export async function searchSimilarIncidents(_env,query) { globalThis.reuseWorkflowTest.memoryCalls++; globalThis.reuseWorkflowTest.memoryQuery=query; return globalThis.reuseWorkflowTest.history; }"
+      ),
+      agents: moduleUrl(
+        "export async function getAgentByName() {return {updateInvestigation: async () => {}, getInvestigations: async () => [], recordAlertReport: async (_id,report) => globalThis.reuseWorkflowTest.published.push(report)};}"
+      ),
+      ai: moduleUrl(
+        "export function streamText() { globalThis.reuseWorkflowTest.modelCalls++; return {textStream: (async function*() {yield 'Full investigation report';})(), text: Promise.resolve('Full investigation report'), finishReason: Promise.resolve('stop')};}"
+      )
+    })
+  );
+  const env = {
+    INCIDENT_MEMORY_REUSE_ENABLED: "true",
+    INCIDENT_MEMORY_REUSE_MIN_SCORE: "0.9",
+    INCIDENT_MEMORY_TOP_K: "5",
+    RCA_MAX_RETRIES: "1",
+    RCA_RETRY_DELAY_SECONDS: "30",
+    RCA_MAX_OUTPUT_TOKENS: "1600"
+  };
+  const event = {
+    instanceId: "reuse-test",
+    timestamp: new Date(now),
+    payload: {
+      agentName: "default",
+      alert: {
+        ...alert,
+        startsAt: new Date(now - 1000).toISOString(),
+        labels: {
+          namespace: "incident-lab",
+          service: "demo-service",
+          component: "database",
+          alertname: "DBConnectionErrors"
+        }
+      }
+    }
+  };
+  const step = { do: async (_name, _options, callback) => callback() };
+  try {
+    const reused = await new InvestigationWorkflow(env).run(event, step);
+    assert.equal(reused.investigationMode, "historical-reuse");
+    assert.equal(reused.reusedIncidentId, "db-history");
+    const query = JSON.parse(state.memoryQuery);
+    assert.equal(query.fingerprint, undefined);
+    assert.equal(query.startsAt, undefined);
+    assert.deepEqual(query.labels, event.payload.alert.labels);
+    assert.equal(
+      reused.reuseDecisionReason,
+      "current-evidence-satisfies-reuse-conditions"
+    );
+    assert.ok(reused.timeToRcaMs >= 0);
+    assert.deepEqual(state.tools, ["deployment", "logs"]);
+    assert.equal(state.modelCalls, 0);
+    assert.equal(state.published.length, 1);
+    assert.equal(reused.reuseTelemetry.rcaLlmSkipped, true);
+    state.tools = [];
+    const disabled = await new InvestigationWorkflow(env).run(
+      { ...event, payload: { ...event.payload, memoryEnabled: false } },
+      step
+    );
+    assert.equal(disabled.investigationMode, "full");
+    assert.equal(disabled.reuseDecisionReason, "memory-disabled");
+    assert.equal(state.tools.length, 5);
+    assert.equal(state.memoryCalls, 1);
+    assert.equal(state.modelCalls, 1);
+    state.tools = [];
+    state.deployment.image = "demo-service:v3";
+    const mismatch = await new InvestigationWorkflow(env).run(event, step);
+    assert.equal(mismatch.investigationMode, "full");
+    assert.equal(mismatch.reuseDecisionReason, "deployment-image-mismatch");
+    assert.equal(state.tools.length, 5);
+    assert.equal(state.modelCalls, 2);
+  } finally {
+    delete globalThis.reuseWorkflowTest;
+  }
+});
+
 test("automatic Workflow retries model failure and publishes a report; manual mode stays evidence-only", async () => {
   const moduleUrl = (source) =>
     `data:text/javascript;base64,${Buffer.from(source).toString("base64")}`;
   const overrides = {
+    "cloudflare:workflows": moduleUrl(
+      "export class NonRetryableError extends Error {}"
+    ),
     "cloudflare:workers": moduleUrl(
       "export class WorkflowEntrypoint { constructor(env) { this.env = env; } }"
     ),
@@ -649,7 +1389,7 @@ test("automatic Workflow retries model failure and publishes a report; manual mo
       "export const getAlerts = async () => []; export const getDeployments = async () => ({image: 'v2'}); export const queryLogs = async () => ({logs: ['500 error']}); export const queryMetrics = async () => ({value: 0.5});"
     ),
     "./incident-memory": moduleUrl(
-      "export const searchSimilarIncidents = async () => { throw new Error('memory offline'); };"
+      "export const searchSimilarIncidents = async () => { globalThis.alertWorkflowTest.memoryCalls++; throw new Error('memory offline'); };"
     ),
     "./model-provider": moduleUrl(
       "export const createChatModel = () => ({modelId: 'test'});"
@@ -664,7 +1404,12 @@ test("automatic Workflow retries model failure and publishes a report; manual mo
   const { InvestigationWorkflow } = await import(
     await loadSource("../src/investigation-workflow.ts", overrides)
   );
-  globalThis.alertWorkflowTest = { modelCalls: 0, published: [], progress: [] };
+  globalThis.alertWorkflowTest = {
+    modelCalls: 0,
+    memoryCalls: 0,
+    published: [],
+    progress: []
+  };
   const names = [];
   const step = {
     async do(name, _config, callback) {
@@ -677,7 +1422,12 @@ test("automatic Workflow retries model failure and publishes a report; manual mo
     }
   };
   try {
-    const workflow = new InvestigationWorkflow({});
+    const workflow = new InvestigationWorkflow({
+      RCA_MAX_RETRIES: "1",
+      RCA_RETRY_DELAY_SECONDS: "30",
+      RCA_MAX_OUTPUT_TOKENS: "1600",
+      INCIDENT_MEMORY_TOP_K: "5"
+    });
     const output = await workflow.run(
       {
         instanceId: "alert-test",
@@ -717,6 +1467,21 @@ test("automatic Workflow retries model failure and publishes a report; manual mo
     );
     assert.equal(manual.report, undefined);
     assert.equal(globalThis.alertWorkflowTest.published.length, 1);
+    const disabled = await workflow.run(
+      {
+        instanceId: "without-memory-test",
+        timestamp: new Date(),
+        payload: {
+          alert,
+          agentName: "default",
+          sinceSeconds: 1800,
+          memoryEnabled: false
+        }
+      },
+      step
+    );
+    assert.equal(JSON.parse(disabled.historicalContext).disabled, true);
+    assert.equal(globalThis.alertWorkflowTest.memoryCalls, 1);
   } finally {
     delete globalThis.alertWorkflowTest;
   }

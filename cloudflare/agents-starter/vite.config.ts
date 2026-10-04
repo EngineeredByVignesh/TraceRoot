@@ -5,5 +5,12 @@ import { defineConfig } from "vite";
 import agents from "agents/vite";
 
 export default defineConfig({
-  plugins: [agents(), react(), cloudflare(), tailwindcss()]
+  plugins: [
+    agents(),
+    react(),
+    cloudflare(
+      process.env.BENCHMARK_ENABLED === "true" ? { persistState: false } : {}
+    ),
+    tailwindcss()
+  ]
 });

@@ -1,0 +1,215 @@
+{
+  "runId": "660d720a",
+  "namespace": "benchmark-660d720a",
+  "startedAt": "2026-10-04T10:10:29.563Z",
+  "modelProvider": "cloudflare",
+  "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+  "datasetVersion": 5,
+  "scoringVersion": 2,
+  "datasetSha256": "136e739050fac7306e59c67171e73634e90f566d4f5ec332b8a5a73234de1717",
+  "mode": "controlled-evidence-replay",
+  "preflight": {
+    "demoService": "Existing kind deployment /healthz reachable (HTTP 200); not proof of application health",
+    "prometheus": "ready",
+    "kube-prometheus-stack-alertmanager": "ready",
+    "loki": "ready",
+    "tools/deployments": 200,
+    "tools/alerts": 200,
+    "liveMetrics": 200,
+    "liveLogs": 200,
+    "agent": "ready",
+    "model": {
+      "text": "OK",
+      "structuredOutput": {
+        "correlated": true,
+        "investigationId": "benchmark-active",
+        "confidence": 0.9,
+        "reason": "Shared namespace, service, component, and start time suggest a causal relationship between the latency and errors.",
+        "latencyMs": 2962,
+        "modelCorrelated": true,
+        "modelConfidence": 0.9,
+        "formatFallback": false,
+        "outcome": "model"
+      }
+    }
+  },
+  "arms": {},
+  "errors": [
+    "Benchmark API 400: {\"error\":\"Invalid benchmark request\"}"
+  ],
+  "configuration": {
+    "datasetCases": [
+      {
+        "id": "large-bad_deploy",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-memory_leak",
+        "behavior": "single-incident-alert-group",
+        "alerts": 4
+      },
+      {
+        "id": "large-cpu_saturation",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-db_problem",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-dependency_outage",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-traffic_spike",
+        "behavior": "single-incident-alert-group",
+        "alerts": 4
+      },
+      {
+        "id": "large-crash_loop",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-rollout_failure",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-disk_pressure",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-network_latency",
+        "behavior": "single-incident-alert-group",
+        "alerts": 3
+      },
+      {
+        "id": "large-independent-burst",
+        "behavior": "ten-independent-simultaneous-incidents",
+        "alerts": 32
+      },
+      {
+        "id": "overlapping",
+        "behavior": "overlapping",
+        "alerts": 5
+      },
+      {
+        "id": "database-only",
+        "behavior": "exact-recurrence",
+        "alerts": 2
+      },
+      {
+        "id": "changed-image",
+        "behavior": "changed-image",
+        "alerts": 1
+      },
+      {
+        "id": "different-database-cause",
+        "behavior": "different-database-cause",
+        "alerts": 1
+      },
+      {
+        "id": "noisy-recurrence",
+        "behavior": "same-cause-noisy-wording",
+        "alerts": 1
+      },
+      {
+        "id": "insufficient-evidence",
+        "behavior": "unknown-cause-safe-diagnostics",
+        "alerts": 1
+      }
+    ],
+    "memoryReuseEnabled": true,
+    "memoryReuseMinimumScore": 0.9,
+    "correlationMinimumConfidence": 0.8,
+    "correlationOutputMode": "prompt-json",
+    "correlationScopeLabels": "namespace,service,component",
+    "localState": "ephemeral (persistState=false)",
+    "maxConcurrency": 2,
+    "requestTimeoutMs": 60000,
+    "fixtureDelayMs": 8000,
+    "repetitions": 2,
+    "armOrders": [
+      [
+        "withoutMemory",
+        "withMemory"
+      ],
+      [
+        "withMemory",
+        "withoutMemory"
+      ]
+    ]
+  },
+  "memorySeeds": [
+    {
+      "id": "incident-4e431e9f-0013-478c-91e8-569eb254d9c5",
+      "title": "Order renderer regression after rollout"
+    },
+    {
+      "id": "incident-3d10457d-ac2e-401e-887b-8a494aedb843",
+      "title": "Worker heap leak and simulated OOM"
+    },
+    {
+      "id": "incident-23a5c8cb-ccb0-432f-87f2-26177b984c65",
+      "title": "Runaway compute loop saturates CPU"
+    },
+    {
+      "id": "incident-ddbbb705-3806-49b1-9537-bd20e130f787",
+      "title": "orders-db pool exhaustion"
+    },
+    {
+      "id": "incident-95b5e34a-0b4b-4061-a23c-b0e86e5c8a87",
+      "title": "Payments dependency is unavailable"
+    },
+    {
+      "id": "incident-4d15571d-05a4-433b-8e9d-8b8bc00ea6bf",
+      "title": "Traffic surge overloads ingress capacity"
+    },
+    {
+      "id": "incident-4be7a1c1-699c-41a2-b1c7-bc619f4c73ef",
+      "title": "Worker startup configuration crash loop"
+    },
+    {
+      "id": "incident-99e00994-95f7-4ebf-9a6f-60fb2e3a4f98",
+      "title": "Deployment image pull prevents rollout"
+    },
+    {
+      "id": "incident-aa868630-8141-498a-afbe-89d90ac76d46",
+      "title": "Storage volume exhausted by retained logs"
+    },
+    {
+      "id": "incident-30c1b83b-4443-40f2-88dc-faed1b1b81b4",
+      "title": "Packet loss delays shipping requests"
+    },
+    {
+      "id": "incident-891be2af-1597-491b-8e4a-5e5aec7a3337",
+      "title": "Unrelated image registry outage"
+    }
+  ],
+  "llmRequests": [
+    {
+      "event": "llm.request",
+      "operation": "preflight",
+      "id": "benchmark-model-check",
+      "ok": true,
+      "queueMs": 13,
+      "durationMs": 1627
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "benchmark-model-check",
+      "ok": true,
+      "queueMs": 7,
+      "durationMs": 2951
+    }
+  ],
+  "finishedAt": "2026-10-04T10:12:32.634Z",
+  "toolCalls": []
+}

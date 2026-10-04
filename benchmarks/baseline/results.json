@@ -1,0 +1,2867 @@
+{
+  "runId": "b394e216",
+  "namespace": "benchmark-b394e216",
+  "startedAt": "2026-10-03T13:49:30.233Z",
+  "modelProvider": "cloudflare",
+  "model": "@cf/meta/llama-3.1-8b-instruct-fp8",
+  "datasetVersion": 2,
+  "datasetSha256": "0686386a4110bba757eca6d1e0acb21f50c9b89afdeab92df9a92ec225e76ce6",
+  "mode": "controlled-evidence-replay",
+  "preflight": {
+    "demoService": "Existing kind deployment /healthz reachable (HTTP 200); not proof of application health",
+    "prometheus": "ready",
+    "kube-prometheus-stack-alertmanager": "ready",
+    "loki": "ready",
+    "tools/deployments": 200,
+    "tools/alerts": 200,
+    "liveMetrics": 200,
+    "liveLogs": 200,
+    "agent": "ready",
+    "model": {
+      "text": "OK",
+      "structuredOutput": {
+        "correlated": true,
+        "investigationId": "benchmark-active",
+        "confidence": 1,
+        "reason": "The incoming alert shares the same service, namespace, component, and start time as the active investigation, indicating a likely causal relationship.",
+        "latencyMs": 3189,
+        "modelCorrelated": true,
+        "modelConfidence": 1,
+        "formatFallback": false,
+        "outcome": "model"
+      }
+    }
+  },
+  "arms": {
+    "withoutMemory": {
+      "rows": [
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-d1ff2ffe5a80af2a6da99a976efb77e5ac8d993a584ef01641b21816bb423af3",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-d1ff2ffe5a80af2a6da99a976efb77e5ac8d993a584ef01641b21816bb423af3",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.8,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4102,
+          "reason": "Similar service, namespace, component, and start time suggest a causal dependency."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-1007ab94ac64c1339fdde42ca7a0cfbf973373cca59fe73a9af42bc760802504",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.9,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 4867,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: Shared start time and service with previous errors on order-renderer component"
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-66940a8165640511de8d1c09bf3cd5feb008b11bf9244890124dd525af057e48",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0.7,
+          "modelConfidence": 0.7,
+          "modelCorrelated": true,
+          "outcome": "low-confidence",
+          "formatFallback": false,
+          "latencyMs": 4442,
+          "reason": "Below configured confidence threshold (0.8): Shared start time and service component with active investigation alert."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-c78b5201fad82da01e353d256b80a3f849aa9f5be54330665e8d520d82984b7b",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0,
+          "modelCorrelated": false,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 2513,
+          "reason": "no causal dependency found between incoming alert and active investigations"
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-f674c717c643072bb95a16241726a481005ef4e7a847f63563cf9ca219b47da4",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-f674c717c643072bb95a16241726a481005ef4e7a847f63563cf9ca219b47da4",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.8,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4144,
+          "reason": "latency and errors in database component, same start time and namespace."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-c2967ed1ee6e19849194b4e5d8d95c8ded44983940ae22ce972e1211094214de",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-c2967ed1ee6e19849194b4e5d8d95c8ded44983940ae22ce972e1211094214de",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.9,
+          "modelConfidence": 0.9,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4202,
+          "reason": "Shared service and component indicate a common cause."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-e2367bcf4fc69a112e8c12040b89dc4103f94ee47e17293b4587e55244ae1395",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.9,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 4636,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: The incoming alert shares the same service, namespace, component and start time with the active investigation."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-e2367bcf4fc69a112e8c12040b89dc4103f94ee47e17293b4587e55244ae1395",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 1,
+          "modelConfidence": 1,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4252,
+          "reason": "The incoming alert shares the same component and start time with an active investigation."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-028747e389ad5038e9216773958755a806fddf8d6391ca31fedeb9f5a28cc16c",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0,
+          "modelCorrelated": false,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 2253,
+          "reason": "No causal dependency found between incoming alert and active investigations."
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-1e8a8863931d2c252374e136f78f6f7fe5ec450008a7a51e8493130096476248",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-1e8a8863931d2c252374e136f78f6f7fe5ec450008a7a51e8493130096476248",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 1,
+          "modelConfidence": 1,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4315,
+          "reason": "Database latency and errors are related, sharing the same start time and service."
+        }
+      ],
+      "investigations": [
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-d1ff2ffe5a80af2a6da99a976efb77e5ac8d993a584ef01641b21816bb423af3",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceHighErrorRate.",
+            "collectedAt": "2026-10-03T13:51:28.854Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035464.774,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035472.805,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035480835000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r1-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceHighErrorRate",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 17799,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a high error rate and high latency in the order-renderer component of the demo-service in the incident-lab namespace.\n\n**Evidence**\nThe alert `DemoServiceHighErrorRate` is firing, indicating that 65% of /api/orders requests are returning HTTP 500 errors. The `DemoServiceHighLatency` alert is also firing, showing that the p95 latency for /api/orders requests exceeds 1 second. The logs show an error message indicating an order handler exception after the v2 rollout, with a delay in rendering and renderer liveness failure.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z.\n\n**Likely Root Cause**\nBased on the evidence, a likely root cause is a compatibility issue with the v2 rollout of the demo-service. The error message mentions an exception after the v2 rollout, and the high error rate and latency suggest that the order-renderer component is not functioning correctly.\n\n**Confidence**\nThe confidence level is high, as the evidence from the alert, logs, and metric queries all point to a specific cause.\n\n**Remediation**\nA targeted fix is to roll back the demo-service to the previous version (v1) and verify that the issue is resolved.\n\n**Verification**\nTo verify the fix, we can check the following:\n\n* The `DemoServiceHighErrorRate` alert should no longer be firing.\n* The `DemoServiceHighLatency` alert should no longer be firing.\n* The logs should no longer show error messages related to the order handler exception.\n* The p95 latency for /api/orders requests should be within the expected range.\n\n**Missing Evidence**\nThere is no information about the demo-service deployment configuration, such as the container image or environment variables."
+          },
+          "observedTimeToRcaMs": 59146
+        },
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-1007ab94ac64c1339fdde42ca7a0cfbf973373cca59fe73a9af42bc760802504",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:51:37.811Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035473.741,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035481.771,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035489797000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r1-2",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 20455,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe investigation focuses on the target incident involving the \"DemoServiceDBConnectionErrors\" alert, which is related to the demo-service in the incident-lab namespace, specifically affecting the orders-db database.\n\n**Evidence**\n* The alert is \"firing\" and has a fingerprint of \"b394e216-withoutMemory-overlapping-r1-2\".\n* The alert's summary indicates that the independent /api/db probe cannot acquire orders-db connections, with pool acquisition errors rising.\n* The alert's labels include the namespace, service, component, database, and severity.\n* The collected data includes metrics on error rate and p95 latency for the demo-service database.\n* The logs show an error message indicating a connection pool exhausted error with a 1200ms acquisition wait.\n\n**Timeline**\n* The alert started firing at 2026-10-03T13:49:30.233Z.\n\n**Likely Root Cause**\nBased on the evidence, the likely root cause of the issue is a connection pool exhaustion error, which is preventing the independent /api/db probe from acquiring orders-db connections. This is supported by the error message in the logs and the rising pool acquisition errors.\n\n**Confidence**\nConfidence is moderate (70%) due to the presence of error messages and metrics indicating a connection pool exhaustion issue.\n\n**Remediation**\nTo address the issue, a targeted fix is recommended to increase the connection pool size or adjust the acquisition timeout for the orders-db database. This can be achieved by modifying the database configuration or adjusting the pool settings in the demo-service.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n* Monitor the error rate and p95 latency metrics to ensure they return to normal levels.\n* Verify that the independent /api/db probe can acquire orders-db connections without errors.\n* Check the logs for any further connection pool exhaustion errors.\n\n**Missing Evidence**\nThe following information is missing from the provided data:\n* The current configuration of the demo-service and its database settings.\n* The specific implementation of the /api/db probe and its connection pooling mechanism.\n* Any recent changes to the demo-service or its environment that may be contributing to the issue."
+          },
+          "observedTimeToRcaMs": 70347
+        },
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-c78b5201fad82da01e353d256b80a3f849aa9f5be54330665e8d520d82984b7b",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServicePodRestarts.",
+            "collectedAt": "2026-10-03T13:51:44.876Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035480.802,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035488.824,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035496860000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r1-4",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServicePodRestarts",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 21389,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe incident involves a restart of the demo-service pod in the incident-lab namespace due to liveness failures following a rollout of version 2.\n\n**Evidence**\n* The alert \"DemoServicePodRestarts\" is firing, indicating a restart of the demo-service pod.\n* The rollout status of the demo-service deployment is \"deployment successfully rolled out\" with version v2.\n* The error rate of the order renderer is 65% for /api/orders requests.\n* The p95 latency of the order renderer is 1.1 seconds for /api/orders requests.\n* The logs show an error message indicating an order handler exception after v2, with a 1100ms delay in rendering and a failed renderer liveness check.\n\n**Timeline**\nThe incident started at 2026-10-03T13:49:30.233Z and the evidence was collected at 2026-10-03T13:51:44.876Z.\n\n**Likely Root Cause**\nThe likely root cause is the rollout of version 2 of the demo-service, which caused the order renderer to fail its liveness check, resulting in a restart of the pod.\n\n**Confidence**\nThe confidence in this explanation is high, as there is a direct correlation between the rollout of version 2 and the failure of the order renderer.\n\n**Remediation**\nTo fix the issue, a targeted repair of the order renderer component is recommended. This may involve rolling back the order renderer to a previous version or updating its configuration to improve its liveness check.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n* Check that the error rate of the order renderer has decreased to a healthy level.\n* Check that the p95 latency of the order renderer has decreased to a healthy level.\n* Verify that the order renderer is able to pass its liveness check.\n\n**Missing Evidence**\nThere is no missing evidence in this incident, as all necessary information is available in the provided data."
+          },
+          "observedTimeToRcaMs": 78567
+        },
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-66940a8165640511de8d1c09bf3cd5feb008b11bf9244890124dd525af057e48",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBLatency.",
+            "collectedAt": "2026-10-03T13:51:42.320Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035478.24,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035486.274,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035494310000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r1-3",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBLatency",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 45271,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert named \"DemoServiceDBLatency\" in the \"incident-lab\" namespace, related to the \"demo-service\" service with the \"database\" component and \"orders-db\" database.\n\n**Evidence**\nThe alert was triggered at 2026-10-03T13:49:30.233Z and has been active for 1800 seconds. The alert is currently firing, with a severity of warning. The probe did not execute the order renderer due to connection acquisition p95 exceeding 1 second.\n\nThe associated evidence includes:\n\n* Deployment metadata: The deployment of the \"demo-service\" has the name \"demo-service\", namespace \"incident-lab\", image \"demo-service:v2\", and rollout status \"deployment successfully rolled out\".\n* Alerts: Two alerts are related to this incident: \"DemoServiceDBLatency\" and \"DemoServiceDBConnectionErrors\". The latter is active and reports independent /api/db probe cannot acquire orders-db connections with pool acquisition errors rising.\n* Error rate: The error rate is 0.8, as reported by the \"errorRateJson\" data.\n* P95 latency: The p95 latency is 1.2 seconds, as reported by the \"p95LatencyJson\" data.\n* Log: A log entry reports an ERROR with the message \"connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\".\n\n**Timeline**\nThe alert was triggered at 2026-10-03T13:49:30.233Z and has been active for 1800 seconds.\n\n**Likely Root Cause**\nThe likely root cause of the incident is a connection pool exhaustion issue, as indicated by the log entry and the \"DemoServiceDBConnectionErrors\" alert. The connection pool is exhausted, and the independent /api/db probe is unable to acquire connections, resulting in a timeout and a p95 latency exceeding 1 second.\n\n**Confidence**\nThe confidence in this root cause is 0.8, as reported by the associated alert's correlation.\n\n**Remediation**\nTo remediate this issue, a targeted repair is recommended:\n\n* Increase the connection pool size for the \"orders-db\" database to prevent exhaustion.\n\n**Verification**\nVerification checks for the target component:\n\n* Monitor the error rate and p95 latency metrics to ensure they are within normal limits.\n* Verify that the connection pool size has been increased.\n\nVerification checks for unaffected components:\n\n* Monitor the \"demo-service\" service to ensure it is operating normally.\n* Verify that other databases and services are not affected by this issue.\n\n**Missing Evidence**\nNo additional evidence is required to investigate this incident. However, it would be beneficial to review the deployment history and configuration to ensure that the connection pool size was not intentionally set to a low value."
+          },
+          "observedTimeToRcaMs": 99913
+        },
+        {
+          "caseId": "database-only-r1",
+          "id": "alert-f674c717c643072bb95a16241726a481005ef4e7a847f63563cf9ca219b47da4",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:53:08.744Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition latency is elevated; /api/orders is unaffected.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":0}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035564.678,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035572.698,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035580726000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-database-only-r1-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 22143,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe incident involves a firing alert for DemoServiceDBConnectionErrors in the incident-lab namespace, service demo-service, component database, and database orders-db.\n\n**Evidence**\nThe evidence consists of:\n\n* A firing alert DemoServiceDBConnectionErrors with a summary message \"orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy.\"\n* Related alerts:\n\t+ Another firing alert DemoServiceDBLatency with a summary message \"orders-db connection acquisition latency is elevated; /api/orders is unaffected.\"\n* Error rate and latency metrics for the demo-service service in the incident-lab namespace.\n* Log stream showing an ERROR message \"connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\" for the database component.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z.\n\n**Likely Root Cause**\nThe likely root cause is a connection pool exhaustion issue in the orders-db database, as indicated by the log message and the firing alert DemoServiceDBConnectionErrors. The error rate and latency metrics suggest that the database is experiencing issues acquiring connections, which is further supported by the elevated latency in the DemoServiceDBLatency alert.\n\n**Confidence**\nThe confidence level is medium to high, as there are multiple indicators pointing to a connection pool exhaustion issue.\n\n**Remediation**\nA targeted fix for this issue would be to increase the connection pool size in the orders-db database. This can be done by updating the deployment configuration to increase the number of database connections available for the demo-service.\n\n**Verification**\nVerification checks:\n\n* Monitor the error rate and latency metrics for the demo-service service in the incident-lab namespace to ensure they return to normal levels.\n* Check the log stream for the database component to ensure there are no further ERROR messages related to connection pool exhaustion.\n* Verify that the demo-service service is functioning correctly and that the /api/db endpoint returns a successful response.\n\n**Missing Evidence**\nThere is no information available about the deployment history, previous incidents, or any other potential causes for the issue."
+          },
+          "observedTimeToRcaMs": 63199
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-c2967ed1ee6e19849194b4e5d8d95c8ded44983940ae22ce972e1211094214de",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceHighErrorRate.",
+            "collectedAt": "2026-10-03T13:59:19.432Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035935.38,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035943.406,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035951424000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r2-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceHighErrorRate",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 20710,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe issue is related to the \"order-renderer\" component of the \"demo-service\" service in the \"incident-lab\" namespace, where HTTP 500 errors occur for 65% of requests to the \"/api/orders\" endpoint.\n\n**Evidence**\n* The \"DemoServiceHighErrorRate\" alert is firing, indicating that the error rate is above the threshold.\n* The error rate is 65% for the \"/api/orders\" endpoint.\n* The \"p95Latency\" metric is above 1 second, indicating high latency.\n* There are no related or unrelated alerts that provide additional context.\n* The deployment metadata shows that the \"demo-service\" was rolled out with version \"v2\".\n\n**Timeline**\n* The alert started firing at 2026-10-03T13:49:30.233Z.\n\n**Likely Root Cause**\nThe likely root cause is the rollout of the \"demo-service\" with version \"v2\", which is causing the order-renderer component to return HTTP 500 errors and high latency.\n\n**Confidence**\nThe confidence level is medium, as there is not enough evidence to confirm the root cause, but the correlation between the alerts and the deployment metadata suggests a strong connection.\n\n**Remediation**\nTo resolve the issue, a targeted fix is recommended. If the issue is caused by a specific configuration or code change in the \"demo-service\" version \"v2\", a rollback to the previous version or a specific patch might be necessary. If the issue is caused by a misconfiguration, updating the configuration to the correct values might resolve the issue.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n* Monitor the error rate and latency metrics to ensure they return to normal values.\n* Verify that the order-renderer component is functioning correctly by checking the logs and the \"/api/orders\" endpoint.\n\n**Missing Evidence**\nThere is no information about the previous version of the \"demo-service\" or the changes made in the \"v2\" version. Additionally, there are no logs or metrics from before the deployment of the \"v2\" version to provide further context."
+          },
+          "observedTimeToRcaMs": 61557
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-e2367bcf4fc69a112e8c12040b89dc4103f94ee47e17293b4587e55244ae1395",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:59:28.319Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035944.26,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035952.286,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035960310000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r2-2",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 22361,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert \"DemoServiceDBConnectionErrors\" in the \"incident-lab\" namespace, related to the \"demo-service\" service, \"database\" component, and \"orders-db\" database.\n\n**Evidence**\n\n* The alert \"DemoServiceDBConnectionErrors\" has been firing since 2026-10-03T13:49:30.233Z with a severity of warning.\n* The alert summary indicates that the independent /api/db probe cannot acquire orders-db connections, and pool acquisition errors are rising.\n* The error rate metric shows a value of 0.8 and the p95 latency metric shows a value of 1.2.\n* The logs show an error message indicating that the connection pool is exhausted and the independent /api/db acquisition timeout.\n* The deployment metadata shows that the \"demo-service\" deployment is running with version \"v2\" and has been successfully rolled out.\n\n**Timeline**\n\n* The alert started firing at 2026-10-03T13:49:30.233Z.\n* The evidence was collected at 2026-10-03T13:59:28.319Z.\n\n**Likely Root Cause**\nThe likely root cause is a connection pool exhaustion error in the \"orders-db\" database, leading to a rise in pool acquisition errors.\n\n**Confidence**\nThe confidence in this root cause is medium, as there is evidence of connection pool exhaustion and rising acquisition errors, but no explicit error message indicating the exact cause.\n\n**Remediation**\nTo remediate this issue, it is recommended to increase the connection pool size in the \"orders-db\" database configuration.\n\n**Verification**\nVerification checks:\n\n* Verify that the connection pool size has been increased in the \"orders-db\" database configuration.\n* Verify that the error rate and p95 latency metrics have decreased.\n\n**Missing Evidence**\nThe following information is missing:\n\n* The exact configuration of the \"orders-db\" database.\n* The current connection pool size.\n\nNote: The unrelated symptoms of the \"DemoServiceDBLatency\" alert are not relevant to this incident and are not addressed in this report."
+          },
+          "observedTimeToRcaMs": 71762
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-028747e389ad5038e9216773958755a806fddf8d6391ca31fedeb9f5a28cc16c",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServicePodRestarts.",
+            "collectedAt": "2026-10-03T13:59:34.892Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035950.83,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035958.858,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035966882000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-overlapping-r2-4",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServicePodRestarts",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 28880,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert named \"DemoServicePodRestarts\" in the \"incident-lab\" namespace for the \"demo-service\" service, specifically for the \"order-renderer\" component.\n\n**Evidence**\nThe evidence collected includes:\n\n* A firing alert with a summary indicating that the demo-service restarted after renderer liveness failures following rollout v2.\n* Related alerts:\n\t+ A \"DemoServiceHighErrorRate\" alert with a summary indicating that the order renderer returns HTTP 500 for 65% of /api/orders requests.\n\t+ A \"DemoServiceHighLatency\" alert with a summary indicating that the order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\n* Error rate and latency metrics:\n\t+ Error rate: 65% of /api/orders requests return HTTP 500.\n\t+ p95 latency: 1.1 seconds for /api/orders requests.\n* Log data indicating an order handler exception after v2 with a rendering path delay of 1100ms and renderer liveness failed.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z, and the collected evidence was gathered at 2026-10-03T13:59:34.892Z, which is 1800 seconds (30 minutes) after the alert started firing.\n\n**Likely Root Cause**\nBased on the evidence, it appears that the likely root cause of the incident is the failure of the order-renderer component after the rollout of version 2 of the demo-service. The related alerts and log data suggest that the order renderer is experiencing high error rates and latency, which led to the demo-service restarting.\n\n**Confidence**\nThe confidence level is medium, as there is evidence of related alerts and log data, but no direct causal relationship between the alerts has been established.\n\n**Remediation**\nTo resolve the incident, it is recommended to investigate and fix the issue with the order-renderer component. This may involve rolling back to the previous version of the demo-service or fixing the underlying issue causing the order-renderer component to fail.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n\n* Check the error rate and latency metrics to ensure they are within acceptable ranges.\n* Verify that the order-renderer component is functioning correctly and not experiencing high error rates or latency.\n* Check the log data to ensure that the order handler exceptions are no longer occurring.\n\n**Missing Evidence**\nThe following evidence is missing:\n\n* A detailed analysis of the rollout process and any potential issues that may have occurred during the rollout.\n* A thorough investigation of the order-renderer component to determine the root cause of the failure.\n* Data on the previous version of the demo-service to determine if the issue is specific to the new version."
+          },
+          "observedTimeToRcaMs": 84992
+        },
+        {
+          "caseId": "database-only-r2",
+          "id": "alert-1e8a8863931d2c252374e136f78f6f7fe5ec450008a7a51e8493130096476248",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T14:00:44.453Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition latency is elevated; /api/orders is unaffected.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":0}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791036020.389,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791036028.419,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791036036440000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withoutMemory-database-only-r2-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+              }
+            },
+            "historicalContext": "{\"count\":0,\"matches\":[],\"disabled\":true}",
+            "modelTimings": [
+              {
+                "durationMs": 18392,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert named `DemoServiceDBConnectionErrors` for the `demo-service` service in the `incident-lab` namespace, specifically for the `database` component and `orders-db` database.\n\n**Evidence**\n\n* The alert is firing for 1800 seconds, indicating a persistent issue.\n* The error rate is 0.8 (80%) and the p95 latency is 1.2 seconds.\n* The logs show a connection pool exhaustion error with an acquisition wait of 1200ms.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z.\n\n**Likely Root Cause**\nThe likely root cause is a connection pool exhaustion issue with the `orders-db` database, preventing the `demo-service` from acquiring connections. This is supported by the error rate and latency metrics, as well as the log message indicating a connection pool exhaustion.\n\n**Confidence**\nThe confidence level is medium to high, as the error rate and latency metrics are consistent with a connection pool exhaustion issue, and the log message provides additional evidence.\n\n**Remediation**\nTo resolve the issue, a targeted repair is recommended for the `database` component, specifically increasing the connection pool size for the `orders-db` database.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n\n* Check the error rate and latency metrics to ensure they are within healthy ranges.\n* Verify that the connection pool is no longer exhausted, and connections can be acquired successfully.\n* Check that the `demo-service` is functioning correctly and responding to requests.\n\n**Missing Evidence**\nThere is no information on the current connection pool size or the maximum allowed connections for the `orders-db` database."
+          },
+          "observedTimeToRcaMs": 59310
+        }
+      ],
+      "quality": [
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-d1ff2ffe5a80af2a6da99a976efb77e5ac8d993a584ef01641b21816bb423af3",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-1007ab94ac64c1339fdde42ca7a0cfbf973373cca59fe73a9af42bc760802504",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-f674c717c643072bb95a16241726a481005ef4e7a847f63563cf9ca219b47da4",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-c2967ed1ee6e19849194b4e5d8d95c8ded44983940ae22ce972e1211094214de",
+          "success": true,
+          "rootCause": false,
+          "remediation": true,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-e2367bcf4fc69a112e8c12040b89dc4103f94ee47e17293b4587e55244ae1395",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-1e8a8863931d2c252374e136f78f6f7fe5ec450008a7a51e8493130096476248",
+          "success": true,
+          "rootCause": true,
+          "remediation": false,
+          "retrievalDisabled": true,
+          "retrievalUnavailable": false,
+          "retrieved": 0,
+          "relevant": 0,
+          "irrelevant": 0
+        }
+      ],
+      "correlation": {
+        "alerts": 14,
+        "workflows": 9,
+        "mappingAccuracy": 0.7857142857142857,
+        "newIncidentDecisionAccuracy": 0.7857142857142857,
+        "newIncidentRecall": 1,
+        "incorrectMergeRate": 0,
+        "incorrectSplitRate": 0.5,
+        "mergePairs": [
+          0,
+          12
+        ],
+        "splitPairs": [
+          5,
+          10
+        ],
+        "workflowReduction": 0.35714285714285715
+      },
+      "confidence": {
+        "modelDecisions": 10,
+        "unavailable": 0,
+        "lowConfidenceRejected": 1,
+        "scopeRejected": 2,
+        "formatFallbacks": 0,
+        "decisionBrierScore": 0.18000000000000002,
+        "bins": [
+          {
+            "min": 0,
+            "max": 0.5,
+            "samples": 2,
+            "accuracy": 0
+          },
+          {
+            "min": 0.5,
+            "max": 0.8,
+            "samples": 1,
+            "accuracy": 1
+          },
+          {
+            "min": 0.8,
+            "max": 0.95,
+            "samples": 5,
+            "accuracy": 0.6
+          },
+          {
+            "min": 0.95,
+            "max": 1,
+            "samples": 2,
+            "accuracy": 1
+          }
+        ],
+        "latency": {
+          "samples": 10,
+          "medianMs": 4227,
+          "p95Ms": 4763.05,
+          "maxMs": 4867
+        }
+      },
+      "toolCalls": [
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "database-only-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "database-only-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "database-only-r1",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "database-only-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "database-only-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r2",
+          "arm": "withoutMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "database-only-r2",
+          "arm": "withoutMemory"
+        }
+      ],
+      "rootCauseAccuracy": 0.8333333333333334,
+      "remediationAccuracy": 0.8333333333333334,
+      "successfulInvestigationRate": 1,
+      "caseToolCalls": [
+        {
+          "caseId": "overlapping-r1",
+          "count": 20
+        },
+        {
+          "caseId": "database-only-r1",
+          "count": 5
+        },
+        {
+          "caseId": "overlapping-r2",
+          "count": 15
+        },
+        {
+          "caseId": "database-only-r2",
+          "count": 5
+        }
+      ]
+    },
+    "withMemory": {
+      "rows": [
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-a313062bd65690a385a0844d566481f26f87acc6c5a3d98091318ab90cd74602",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-a313062bd65690a385a0844d566481f26f87acc6c5a3d98091318ab90cd74602",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 1,
+          "modelConfidence": 1,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4548,
+          "reason": "Shared service, namespace, component and start time indicate a causal dependency."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 4626,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: The database connection errors and order renderer errors have the same start time and are related to the same service."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.8,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4280,
+          "reason": "Similar service, namespace, component, and start time as related alert DemoServiceDBConnectionErrors."
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-ed26aa5f4ef39e7461a319b8ab74d60cbb4f4e830ad2f23e86c8421bbbb39989",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 6375,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: The incoming alert shares the same service, namespace, and component as the alerts in active investigation alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c."
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-3adc0773c092652f94de596cbb4bf13d8e34a10aa8433533bcc570e0b2dfe402",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-3adc0773c092652f94de596cbb4bf13d8e34a10aa8433533bcc570e0b2dfe402",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.8,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 6072,
+          "reason": "The incoming alert shares the same service, namespace, and component as the active investigation, and the symptoms (latency and errors) suggest a related issue."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-b54333f173238bf40f53d55a15631883283f2e120a268bdd6196f74cd6fdda16",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-b54333f173238bf40f53d55a15631883283f2e120a268bdd6196f74cd6fdda16",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 0.9,
+          "modelConfidence": 0.9,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 5486,
+          "reason": "The incoming alert and active investigation share the same service, namespace, component, and start time, indicating a strong causal relationship."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-f6f22e72934d63afb9914e93bddb29143ac563cff09adadcee352f1ad74e4c87",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 5043,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: The incoming alert's service, namespace, component, and start time match the active investigation's alerts."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-1a2ceff9a4e8e919f264dfce22aa8df0210e2f260802440bdc2034c1665d636d",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0.7,
+          "modelConfidence": 0.7,
+          "modelCorrelated": true,
+          "outcome": "low-confidence",
+          "formatFallback": false,
+          "latencyMs": 6108,
+          "reason": "Below configured confidence threshold (0.8): The incoming alert shares the same service, namespace, component, and start time as an existing alert in investigation alert-f6f22e72934d63afb9914e93bddb29143ac563cff09adadcee352f1ad74e4c87."
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-69d2ddb5732df9c5351969744b3db2bf57e123dda9abc9106801d4391311a885",
+          "expectedNew": false,
+          "correlated": false,
+          "confidence": 0,
+          "modelConfidence": 0.8,
+          "modelCorrelated": true,
+          "outcome": "scope-rejected",
+          "formatFallback": false,
+          "latencyMs": 4110,
+          "reason": "Model merge rejected by configured incident scope: conflicting component. Model reason: The incoming alert shares a common start time and service with existing related alerts."
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-69f02a6c6bd29ed1f39eec20d29c182d0d04c714137d927a87e9f37dd1aae28a",
+          "expectedNew": true,
+          "correlated": false,
+          "confidence": 0,
+          "outcome": "bypass",
+          "reason": "No in-progress investigations."
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-69f02a6c6bd29ed1f39eec20d29c182d0d04c714137d927a87e9f37dd1aae28a",
+          "expectedNew": false,
+          "correlated": true,
+          "confidence": 1,
+          "modelConfidence": 1,
+          "modelCorrelated": true,
+          "outcome": "model",
+          "formatFallback": false,
+          "latencyMs": 4184,
+          "reason": "The incoming alert shares service, namespace, component, dependency and start time with an existing investigation."
+        }
+      ],
+      "investigations": [
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-a313062bd65690a385a0844d566481f26f87acc6c5a3d98091318ab90cd74602",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceHighErrorRate.",
+            "collectedAt": "2026-10-03T13:54:11.947Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035627.874,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035635.903,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035643929000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r1-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceHighErrorRate",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-6b26fde4-95f2-42ef-b524-9131b98a01e3\",\"score\":0.8373018,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:54.565Z\",\"labels\":[\"renderer\",\"order-renderer\",\"demo-service\"],\"remediation\":\"Roll back the renderer deployment to the previous healthy version.\",\"rootCause\":\"Bad deployment introduced an order renderer exception and slow rendering path.\",\"summary\":\"Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.\",\"title\":\"Order renderer regression after rollout\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 21241,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a high error rate and high latency in the order-renderer component of the demo-service in the incident-lab namespace. The error rate is 65% for HTTP 500 responses for the /api/orders route, and the p95 latency exceeds 1 second.\n\n**Evidence**\n* The `errorRateJson` metric shows a high error rate of 0.65 for the /api/orders route.\n* The `p95LatencyJson` metric shows a high p95 latency of 1.1 seconds for the /api/orders route.\n* The `logsJson` shows an error message indicating an order handler exception after the v2 rollout, with a rendering path delayed by 1100ms and renderer liveness failure.\n* The `deploymentJson` shows a successful rollout of the demo-service:v2 image.\n\n**Timeline**\n* The alert was triggered at 2026-10-03T13:49:30.233Z.\n* The error rate and latency metrics are available from 2026-10-03T13:49:30.233Z to 2026-10-03T13:54:11.947Z.\n\n**Likely Root Cause**\nThe likely root cause is the bad deployment of the order-renderer component in the demo-service:v2 rollout, which introduced an order renderer exception and slow rendering path.\n\n**Confidence**\nThe confidence level is medium-high, as the historical context suggests a similar issue occurred previously, but the current evidence needs to be validated.\n\n**Remediation**\nA targeted repair would be to roll back the order-renderer deployment to the previous healthy version.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n* Monitor the error rate and latency metrics for the /api/orders route.\n* Check the order-renderer logs for any errors or exceptions.\n* Verify that the rendering path is functioning correctly.\n\n**Missing Evidence**\nThe evidence does not include the previous healthy version of the order-renderer deployment, which would be necessary to roll back to. Additionally, the exact configuration of the demo-service:v2 rollout is not provided."
+          },
+          "observedTimeToRcaMs": 64102
+        },
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:54:21.144Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035637.073,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035645.098,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035653126000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r1-2",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-e834cb94-6706-4fbb-85d3-8b38d45ce9bf\",\"score\":0.86897856,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:56.682Z\",\"labels\":[\"database\",\"demo-service\"],\"remediation\":\"Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.\",\"rootCause\":\"Database connection pool exhaustion prevented acquiring orders-db connections.\",\"summary\":\"Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.\",\"title\":\"orders-db pool exhaustion\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 19990,
+                "ok": true
+              }
+            ],
+            "report": "## Scope\nThe incident affects the `demo-service` in the `incident-lab` namespace, specifically the `database` component, and the `orders-db` database.\n\n## Evidence\nThe evidence consists of:\n* A firing alert `DemoServiceDBConnectionErrors` with a summary indicating that the independent `/api/db` probe cannot acquire `orders-db` connections, and pool acquisition errors are rising.\n* A related alert `DemoServiceDBLatency` with a summary indicating that the `orders-db` connection acquisition p95 exceeds 1 second.\n* Error rate and p95 latency metrics showing a high error rate (0.8) and a high p95 latency (1.2 seconds).\n* A log entry indicating a connection pool exhausted error with an acquisition timeout and wait time of 1200ms.\n\n## Timeline\nThe alert started firing at 2026-10-03T13:49:30.233Z, and the evidence was collected at 2026-10-03T13:54:21.144Z, 1800 seconds later.\n\n## Likely Root Cause\nThe likely root cause is database connection pool exhaustion, which is preventing the independent `/api/db` probe from acquiring `orders-db` connections.\n\n## Confidence\nThe confidence in this cause is moderate (0.8), based on the historical match and the similarity in symptoms with the related alert `DemoServiceDBLatency`.\n\n## Remediation\nTo remediate this issue, the connection pool should be restored by releasing leaked connections and resizing its capacity. Additionally, the independent renderer should be verified to ensure it stays healthy.\n\n## Verification\nTo verify the remediation, the following checks can be performed:\n* The error rate and p95 latency metrics should decrease.\n* The log entries should no longer indicate connection pool exhausted errors.\n* The independent `/api/db` probe should be able to acquire `orders-db` connections without errors.\n\n## Missing Evidence\nThere is no evidence of the deployment configuration, such as the connection pool size or the database driver version."
+          },
+          "observedTimeToRcaMs": 71266
+        },
+        {
+          "caseId": "overlapping-r1",
+          "id": "alert-ed26aa5f4ef39e7461a319b8ab74d60cbb4f4e830ad2f23e86c8421bbbb39989",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServicePodRestarts.",
+            "collectedAt": "2026-10-03T13:54:31.838Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035647.766,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035655.787,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035663820000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r1-4",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServicePodRestarts",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-6b26fde4-95f2-42ef-b524-9131b98a01e3\",\"score\":0.8389621,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:54.565Z\",\"labels\":[\"renderer\",\"order-renderer\",\"demo-service\"],\"remediation\":\"Roll back the renderer deployment to the previous healthy version.\",\"rootCause\":\"Bad deployment introduced an order renderer exception and slow rendering path.\",\"summary\":\"Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.\",\"title\":\"Order renderer regression after rollout\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 24253,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a warning alert `DemoServicePodRestarts` in the `incident-lab` namespace, related to the `demo-service` service and `order-renderer` component.\n\n**Evidence**\nThe evidence collected includes:\n\n* A JSON object describing the `demo-service` deployment, which indicates a rollout to version `v2` was successful.\n* A list of related alerts, including `DemoServiceHighErrorRate` and `DemoServiceHighLatency`, which suggest high error rates and latency in the `order-renderer` component after the rollout.\n* A JSON object containing error rate data, which shows a 65% error rate for `/api/orders` requests.\n* A JSON object containing p95 latency data, which shows a latency of 1.1 seconds for `/api/orders` requests.\n* A JSON object containing logs, which indicate an order handler exception and a delayed rendering path in the `order-renderer` component.\n\n**Timeline**\nThe alert was triggered at 2026-10-03T13:49:30.233Z, and the evidence was collected at 2026-10-03T13:54:31.838Z.\n\n**Likely Root Cause**\nBased on the evidence, the likely root cause is a bad deployment that introduced an order renderer exception and slow rendering path, leading to liveness failures and restarts of the `demo-service`.\n\n**Confidence**\nConfidence is medium, as the evidence suggests a correlation between the rollout and the issues, but there may be other contributing factors.\n\n**Remediation**\nTo resolve the issue, a targeted fix is recommended that preserves unrelated components. A possible remediation is to roll back the `order-renderer` deployment to the previous healthy version.\n\n**Verification**\nVerification checks should include:\n\n* Monitoring the error rate and latency metrics to ensure they return to normal levels.\n* Checking the logs for any further exceptions or rendering path delays.\n* Verifying that the `order-renderer` deployment has been rolled back successfully.\n\n**Missing Evidence**\nMissing evidence includes:\n\n* More detailed information about the rollout process and any changes made to the `order-renderer` component.\n* Further investigation into the cause of the order handler exception and slow rendering path."
+          },
+          "observedTimeToRcaMs": 86561
+        },
+        {
+          "caseId": "database-only-r1",
+          "id": "alert-3adc0773c092652f94de596cbb4bf13d8e34a10aa8433533bcc570e0b2dfe402",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:55:38.499Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition latency is elevated; /api/orders is unaffected.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":0}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035714.431,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035722.457,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035730485000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-database-only-r1-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-e834cb94-6706-4fbb-85d3-8b38d45ce9bf\",\"score\":0.8997782,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:56.682Z\",\"labels\":[\"database\",\"demo-service\"],\"remediation\":\"Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.\",\"rootCause\":\"Database connection pool exhaustion prevented acquiring orders-db connections.\",\"summary\":\"Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.\",\"title\":\"orders-db pool exhaustion\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 21603,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert `DemoServiceDBConnectionErrors` in the `incident-lab` namespace, related to the `demo-service` service and its `orders-db` database.\n\n**Evidence**\nThe evidence collected includes:\n\n* An alert firing at 2026-10-03T13:49:30.233Z with a summary indicating that the `orders-db` connection pool cannot acquire connections, and `/api/db` returns a 503 status code while the renderer remains healthy.\n* Error rate and latency metrics from the `errorRateJson` and `p95LatencyJson` sections, indicating elevated error rates (0.8) and latency (1.2) for the `demo-service` service.\n* Logs from the `logsJson` section, showing an error message indicating that the connection pool is exhausted and the independent `/api/db` acquisition timeout.\n\n**Timeline**\nThe alert firing time is 2026-10-03T13:49:30.233Z, and the collected evidence was gathered 1800 seconds later at 2026-10-03T13:55:38.499Z.\n\n**Likely Root Cause**\nThe likely root cause of the issue is a database connection pool exhaustion, preventing the `orders-db` connections from being acquired. This is supported by the error message in the logs and the elevated error rates and latency metrics.\n\n**Confidence**\nThe confidence level in this root cause is medium (60-70%), as the historical matches from the `historicalContext` section suggest a similar issue in the past, but the current evidence needs to be validated.\n\n**Remediation**\nTo restore the connection pool, it is recommended to release the leaked connections and resize the capacity of the connection pool. This should be done while verifying that the independent renderer remains healthy.\n\n**Verification**\nVerification checks should be performed to ensure that the connection pool is functioning correctly and that the error rates and latency have returned to normal levels.\n\n**Missing Evidence**\nThere is no information about the current deployment configuration or the specific version of the `demo-service` image used."
+          },
+          "observedTimeToRcaMs": 64185
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-b54333f173238bf40f53d55a15631883283f2e120a268bdd6196f74cd6fdda16",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceHighErrorRate.",
+            "collectedAt": "2026-10-03T13:56:42.687Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035778.608,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035786.639,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035794670000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r2-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceHighErrorRate",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Order renderer returns HTTP 500 for 65% of /api/orders requests."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-6b26fde4-95f2-42ef-b524-9131b98a01e3\",\"score\":0.8375649,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:54.565Z\",\"labels\":[\"renderer\",\"order-renderer\",\"demo-service\"],\"remediation\":\"Roll back the renderer deployment to the previous healthy version.\",\"rootCause\":\"Bad deployment introduced an order renderer exception and slow rendering path.\",\"summary\":\"Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.\",\"title\":\"Order renderer regression after rollout\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 26667,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is the firing of the alert \"DemoServiceHighErrorRate\" in the \"incident-lab\" namespace, related to the \"order-renderer\" component of the \"demo-service\" service.\n\n**Evidence**\n\n* The alert is firing with a status of \"firing\" and a fingerprint of \"b394e216-withMemory-overlapping-r2-0\".\n* The alert has a summary of \"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"\n* The error rate metric is 0.65, indicating that 65% of requests are returning a 500 error.\n* The p95 latency is 1.1 seconds, indicating a significant delay in the order rendering process.\n* The logs show an ERROR message indicating an order handler exception after the v2 rollout, with a rendering path delay of 1100ms and renderer liveness failure.\n\n**Timeline**\n\n* The alert started at 2026-10-03T13:49:30.233Z.\n* The error rate metric is based on a 5-minute window.\n* The p95 latency metric is also based on a 5-minute window.\n\n**Likely Root Cause**\n\nBased on the evidence, it appears that the root cause of the issue is a bad deployment of the order renderer component, which introduced an exception and slow rendering path. This is supported by the historical context, which suggests that a similar issue occurred after a previous rollout.\n\n**Confidence**\n\nThe confidence in this root cause is medium to high, as the historical context and the error rate and latency metrics all point to a similar issue occurring after a rollout.\n\n**Remediation**\n\nA targeted fix is to roll back the order renderer deployment to the previous healthy version.\n\n**Verification**\n\nTo verify the fix, we can check that the error rate and latency metrics return to normal values, and that the order renderer logs no longer show errors related to the exception and slow rendering path.\n\n**Missing Evidence**\n\nThere is no clear evidence of the specific changes made in the v2 rollout that caused the issue.\n\nNote: The historical context suggests that a similar issue occurred after a previous rollout, but this is not a definitive proof of the root cause. Further investigation is needed to confirm the root cause and ensure that the fix is effective."
+          },
+          "observedTimeToRcaMs": 69040
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-f6f22e72934d63afb9914e93bddb29143ac563cff09adadcee352f1ad74e4c87",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:56:53.255Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035789.188,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035797.215,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035805240000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r2-2",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-e834cb94-6706-4fbb-85d3-8b38d45ce9bf\",\"score\":0.8697432,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:56.682Z\",\"labels\":[\"database\",\"demo-service\"],\"remediation\":\"Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.\",\"rootCause\":\"Database connection pool exhaustion prevented acquiring orders-db connections.\",\"summary\":\"Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.\",\"title\":\"orders-db pool exhaustion\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 20954,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert named \"DemoServiceDBConnectionErrors\" in the \"incident-lab\" namespace, affecting the \"demo-service\" service, \"database\" component, and \"orders-db\" database.\n\n**Evidence**\nThe alert indicates that the independent /api/db probe cannot acquire orders-db connections, and the connection pool acquisition errors are rising. The error rate is 0.8 and the p95 latency is 1.2 seconds.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z and the evidence was collected at 2026-10-03T13:56:53.255Z.\n\n**Likely Root Cause**\nBased on the evidence, the likely root cause is that the database connection pool is exhausted, preventing the acquisition of orders-db connections. This is supported by the logs showing connection pool exhausted errors and the high error rate.\n\n**Confidence**\nThe confidence in this root cause is high (0.8) based on the model correlation.\n\n**Remediation**\nTo resolve this issue, the connection pool should be restored by releasing leaked connections and resizing its capacity. This will ensure that the independent renderer stays healthy.\n\n**Verification**\nTo verify the fix, the following checks should be performed:\n\n* The error rate should decrease to 0.\n* The p95 latency should decrease to below 1 second.\n* The independent /api/db probe should be able to acquire orders-db connections without errors.\n\n**Missing Evidence**\nThere is no information about the size of the connection pool or the capacity of the database.\n\n**Historical Match**\nA historical match was found with an incident from 2026-10-03T13:49:56.682Z, which had a similar root cause and remediation. However, this match requires current-evidence validation.\n\n**Associated Alerts**\nThere is an associated alert named \"DemoServiceDBLatency\" with a similar summary and status. However, it has a different severity and does not seem to be related to the current incident."
+          },
+          "observedTimeToRcaMs": 74214
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-1a2ceff9a4e8e919f264dfce22aa8df0210e2f260802440bdc2034c1665d636d",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBLatency.",
+            "collectedAt": "2026-10-03T13:56:59.392Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Independent /api/db probe cannot acquire orders-db connections; pool acquisition errors rising.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":3}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035795.332,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035803.352,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035811375000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r2-3",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBLatency",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection acquisition p95 exceeds 1 second. The probe does not execute the order renderer."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-e834cb94-6706-4fbb-85d3-8b38d45ce9bf\",\"score\":0.8609159,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:56.682Z\",\"labels\":[\"database\",\"demo-service\"],\"remediation\":\"Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.\",\"rootCause\":\"Database connection pool exhaustion prevented acquiring orders-db connections.\",\"summary\":\"Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.\",\"title\":\"orders-db pool exhaustion\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 34932,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert \"DemoServiceDBLatency\" in the \"incident-lab\" namespace, affecting the \"demo-service\" service, \"database\" component, and \"orders-db\" database.\n\n**Evidence**\nThe alert is firing since 1800 seconds (30 minutes) ago, with a severity of warning. The probe does not execute the order renderer due to orders-db connection acquisition p95 exceeding 1 second. The error rate is 0.8, and the p95 latency is 1.2 seconds. The logs indicate a connection pool exhausted error with an acquisition timeout and a wait of 1200ms.\n\n**Timeline**\n* 2026-10-03T13:49:30.233Z: The alert started firing.\n* 2026-10-03T13:56:59.392Z: The evidence was collected.\n\n**Likely Root Cause**\nThe likely root cause is a database connection pool exhaustion, preventing the acquisition of orders-db connections. This is indicated by the `connection pool exhausted` error in the logs and the high error rate.\n\n**Confidence**\nThe confidence level in this root cause is medium to high, as it is supported by both the logs and the metrics.\n\n**Remediation**\nTo resolve this issue, the connection pool should be restored by releasing leaked connections and resizing its capacity. This will ensure that the independent renderer stays healthy.\n\n**Verification**\nTo verify the fix, the following checks should be performed:\n\n* The error rate should decrease to 0.\n* The p95 latency should be below 1 second.\n* The logs should no longer indicate a connection pool exhausted error.\n\n**Missing Evidence**\nThere is no missing evidence in this investigation. However, it would be beneficial to collect more logs and metrics to confirm the effectiveness of the remediation.\n\nNote: The historical match has a score of 0.86, indicating a strong correlation with the current incident. However, this should be validated with current evidence to confirm the accuracy of the root cause."
+          },
+          "observedTimeToRcaMs": 93564
+        },
+        {
+          "caseId": "overlapping-r2",
+          "id": "alert-69d2ddb5732df9c5351969744b3db2bf57e123dda9abc9106801d4391311a885",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServicePodRestarts.",
+            "collectedAt": "2026-10-03T13:57:03.601Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "order-renderer"
+            },
+            "metricKind": "HTTP requests",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceHighErrorRate\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer returns HTTP 500 for 65% of /api/orders requests.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceHighLatency\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Order renderer /api/orders p95 latency exceeds 1 second after rollout v2.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServicePodRestarts\",\"component\":\"order-renderer\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"Demo-service restarted after renderer liveness failures following rollout v2.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":2}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035799.483,\"0.65\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035807.521,\"1.1\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035815559000000\",\"ERROR component=order-renderer order handler exception after v2; rendering path delayed 1100ms; renderer liveness failed\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-overlapping-r2-4",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServicePodRestarts",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "order-renderer",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "Demo-service restarted after renderer liveness failures following rollout v2."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-6b26fde4-95f2-42ef-b524-9131b98a01e3\",\"score\":0.8386883,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:54.565Z\",\"labels\":[\"renderer\",\"order-renderer\",\"demo-service\"],\"remediation\":\"Roll back the renderer deployment to the previous healthy version.\",\"rootCause\":\"Bad deployment introduced an order renderer exception and slow rendering path.\",\"summary\":\"Order renderer 500 errors, one-second delay, and liveness failures after v2 rollout.\",\"title\":\"Order renderer regression after rollout\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 32546,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert named \"DemoServicePodRestarts\" in the \"incident-lab\" namespace, related to the \"demo-service\" service and \"order-renderer\" component.\n\n**Evidence**\n* The alert is firing with a status of \"warning\" and a fingerprint of \"b394e216-withMemory-overlapping-r2-4\".\n* The alert started at 2026-10-03T13:49:30.233Z.\n* The deployment metadata shows that the \"demo-service\" was rolled out with version \"v2\" in the \"incident-lab\" namespace.\n* The error rate for the \"order-renderer\" component is 65% (0.65) for the \"/api/orders\" route, as indicated by the \"DemoServiceHighErrorRate\" alert.\n* The p95 latency for the \"order-renderer\" component is 1.1 seconds for the \"/api/orders\" route, as indicated by the \"DemoServiceHighLatency\" alert.\n* The logs show an \"ERROR\" message for the \"order-renderer\" component, indicating an exception after v2 rollout and a delayed rendering path.\n\n**Timeline**\nThe alert started firing at 2026-10-03T13:49:30.233Z, and the investigation was conducted at 2026-10-03T13:57:03.601Z.\n\n**Likely Root Cause**\nThe likely root cause of the issue is a bad deployment that introduced an order renderer exception and slow rendering path after the rollout of version \"v2\" of the \"demo-service\".\n\n**Confidence**\nThe confidence in this root cause is high (0.8386883) based on a historical match with a similar incident (incident-6b26fde4-95f2-42ef-b524-9131b98a01e3).\n\n**Remediation**\nTo remediate this issue, the recommendation is to roll back the \"order-renderer\" deployment to the previous healthy version.\n\n**Verification**\nTo verify the fix, the following checks can be performed:\n* Check the error rate and p95 latency for the \"order-renderer\" component for the \"/api/orders\" route.\n* Verify that the \"order-renderer\" deployment is successfully rolled back to the previous healthy version.\n* Check the logs for the \"order-renderer\" component to ensure that there are no more exceptions or delayed rendering paths.\n\n**Missing Evidence**\n* There is no data on the specific configuration or code changes made in the rollout of version \"v2\" of the \"demo-service\".\n* There is no data on the exact timing of the rollout or the deployment process."
+          },
+          "observedTimeToRcaMs": 95595
+        },
+        {
+          "caseId": "database-only-r2",
+          "id": "alert-69f02a6c6bd29ed1f39eec20d29c182d0d04c714137d927a87e9f37dd1aae28a",
+          "status": "complete",
+          "output": {
+            "question": "Investigate firing alert DemoServiceDBConnectionErrors.",
+            "collectedAt": "2026-10-03T13:58:18.274Z",
+            "sinceSeconds": 1800,
+            "scope": {
+              "namespace": "incident-lab",
+              "service": "demo-service",
+              "component": "database",
+              "database": "orders-db"
+            },
+            "metricKind": "database connection acquisition",
+            "evidence": {
+              "deploymentJson": "{\"name\":\"demo-service\",\"namespace\":\"incident-lab\",\"image\":\"demo-service:v2\",\"env\":[{\"name\":\"APP_VERSION\",\"value\":\"v2\"}],\"rollout_status\":\"deployment successfully rolled out\"}",
+              "alertsJson": "{\"related\":[{\"labels\":{\"alertname\":\"DemoServiceDBConnectionErrors\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy.\"},\"status\":{\"state\":\"active\"}},{\"labels\":{\"alertname\":\"DemoServiceDBLatency\",\"component\":\"database\",\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"annotations\":{\"summary\":\"orders-db connection acquisition latency is elevated; /api/orders is unaffected.\"},\"status\":{\"state\":\"active\"}}],\"unrelatedCount\":0}",
+              "errorRateJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035874.21,\"0.8\"]}]}}",
+              "p95LatencyJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"vector\",\"result\":[{\"metric\":{\"namespace\":\"incident-lab\",\"service\":\"demo-service\"},\"value\":[1791035882.234,\"1.2\"]}]}}",
+              "logsJson": "{\"status\":\"success\",\"data\":{\"resultType\":\"streams\",\"result\":[{\"stream\":{\"namespace\":\"incident-lab\",\"app_kubernetes_io_name\":\"demo-service\"},\"values\":[[\"1791035890265000000\",\"ERROR component=database database=orders-db connection pool exhausted; independent /api/db acquisition timeout; acquisition wait 1200ms\"]]}]}}"
+            },
+            "alert": {
+              "status": "firing",
+              "fingerprint": "b394e216-withMemory-database-only-r2-0",
+              "startsAt": "2026-10-03T13:49:30.233Z",
+              "labels": {
+                "alertname": "DemoServiceDBConnectionErrors",
+                "namespace": "incident-lab",
+                "service": "demo-service",
+                "component": "database",
+                "database": "orders-db",
+                "severity": "warning",
+                "investigate": "true"
+              },
+              "annotations": {
+                "summary": "orders-db connection pool cannot acquire connections; /api/db returns 503 while renderer remains healthy."
+              }
+            },
+            "historicalContext": "{\"count\":1,\"matches\":[{\"id\":\"incident-e834cb94-6706-4fbb-85d3-8b38d45ce9bf\",\"score\":0.8995319,\"namespace\":\"benchmark-b394e216\",\"metadata\":{\"createdAt\":\"2026-10-03T13:49:56.682Z\",\"labels\":[\"database\",\"demo-service\"],\"remediation\":\"Restore the connection pool by releasing leaked connections and resizing its capacity; verify the independent renderer stays healthy.\",\"rootCause\":\"Database connection pool exhaustion prevented acquiring orders-db connections.\",\"summary\":\"Independent database connection probe reported 503 and slow connection acquisition while renderer behavior was independent.\",\"title\":\"orders-db pool exhaustion\"}}],\"filteredCount\":2,\"minimumScore\":0.65,\"note\":\"Historical matches require current-evidence validation.\"}",
+            "modelTimings": [
+              {
+                "durationMs": 18536,
+                "ok": true
+              }
+            ],
+            "report": "**Scope**\nThe target incident is a firing alert \"DemoServiceDBConnectionErrors\" in the \"incident-lab\" namespace, affecting the \"demo-service\" service, \"database\" component, and \"orders-db\" database.\n\n**Evidence**\nThe evidence collected includes:\n* A firing alert with a fingerprint \"b394e216-withMemory-database-only-r2-0\" at 2026-10-03T13:49:30.233Z\n* Related alerts: \"DemoServiceDBLatency\" with a similar start time and service, namespace, component, and dependency\n* Error rate and latency metrics for the \"demo-service\" service and \"orders-db\" database\n* Log stream with an error message indicating the connection pool is exhausted\n* Historical context with a previous incident matching the current alert\n\n**Timeline**\n* 2026-10-03T13:49:30.233Z: Alert \"DemoServiceDBConnectionErrors\" fired\n* 2026-10-03T13:58:18.274Z: Evidence collected\n\n**Likely Root Cause**\nThe likely root cause is database connection pool exhaustion, preventing the acquisition of connections for the \"orders-db\" database.\n\n**Confidence**\nConfidence is high (0.8995319) based on the historical context match and the current evidence.\n\n**Remediation**\nRestore the connection pool by releasing leaked connections and resizing its capacity. Verify the independent renderer stays healthy.\n\n**Verification**\nVerify the connection pool is restored by:\n* Checking the error rate metric for the \"demo-service\" service and \"orders-db\" database\n* Monitoring the log stream for errors related to the connection pool\n* Confirming the renderer remains healthy and unaffected by the connection pool issue\n\n**Missing Evidence**\nNo additional evidence is required to confirm the root cause and remediation plan."
+          },
+          "observedTimeToRcaMs": 61173
+        }
+      ],
+      "quality": [
+        {
+          "caseId": "overlapping-r1",
+          "incident": "renderer",
+          "workflowId": "alert-a313062bd65690a385a0844d566481f26f87acc6c5a3d98091318ab90cd74602",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r1",
+          "incident": "database",
+          "workflowId": "alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "database-only-r1",
+          "incident": "database",
+          "workflowId": "alert-3adc0773c092652f94de596cbb4bf13d8e34a10aa8433533bcc570e0b2dfe402",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "renderer",
+          "workflowId": "alert-b54333f173238bf40f53d55a15631883283f2e120a268bdd6196f74cd6fdda16",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "overlapping-r2",
+          "incident": "database",
+          "workflowId": "alert-f6f22e72934d63afb9914e93bddb29143ac563cff09adadcee352f1ad74e4c87",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        },
+        {
+          "caseId": "database-only-r2",
+          "incident": "database",
+          "workflowId": "alert-69f02a6c6bd29ed1f39eec20d29c182d0d04c714137d927a87e9f37dd1aae28a",
+          "success": true,
+          "rootCause": true,
+          "remediation": true,
+          "retrievalDisabled": false,
+          "retrievalUnavailable": false,
+          "retrieved": 1,
+          "relevant": 1,
+          "irrelevant": 0
+        }
+      ],
+      "correlation": {
+        "alerts": 14,
+        "workflows": 9,
+        "mappingAccuracy": 0.7857142857142857,
+        "newIncidentDecisionAccuracy": 0.7857142857142857,
+        "newIncidentRecall": 1,
+        "incorrectMergeRate": 0,
+        "incorrectSplitRate": 0.5,
+        "mergePairs": [
+          0,
+          12
+        ],
+        "splitPairs": [
+          5,
+          10
+        ],
+        "workflowReduction": 0.35714285714285715
+      },
+      "confidence": {
+        "modelDecisions": 10,
+        "unavailable": 0,
+        "lowConfidenceRejected": 1,
+        "scopeRejected": 4,
+        "formatFallbacks": 0,
+        "decisionBrierScore": 0.15400000000000005,
+        "bins": [
+          {
+            "min": 0,
+            "max": 0.5,
+            "samples": 0,
+            "accuracy": null
+          },
+          {
+            "min": 0.5,
+            "max": 0.8,
+            "samples": 1,
+            "accuracy": 1
+          },
+          {
+            "min": 0.8,
+            "max": 0.95,
+            "samples": 7,
+            "accuracy": 0.7142857142857143
+          },
+          {
+            "min": 0.95,
+            "max": 1,
+            "samples": 2,
+            "accuracy": 1
+          }
+        ],
+        "latency": {
+          "samples": 10,
+          "medianMs": 4834.5,
+          "p95Ms": 6254.849999999999,
+          "maxMs": 6375
+        }
+      },
+      "toolCalls": [
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "database-only-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "database-only-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "database-only-r1",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "overlapping-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/deployments",
+          "caseId": "database-only-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/alerts",
+          "caseId": "database-only-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/metrics/query",
+          "caseId": "database-only-r2",
+          "arm": "withMemory"
+        },
+        {
+          "path": "/logs/query",
+          "caseId": "database-only-r2",
+          "arm": "withMemory"
+        }
+      ],
+      "rootCauseAccuracy": 1,
+      "remediationAccuracy": 1,
+      "successfulInvestigationRate": 1,
+      "caseToolCalls": [
+        {
+          "caseId": "overlapping-r1",
+          "count": 15
+        },
+        {
+          "caseId": "database-only-r1",
+          "count": 5
+        },
+        {
+          "caseId": "overlapping-r2",
+          "count": 20
+        },
+        {
+          "caseId": "database-only-r2",
+          "count": 5
+        }
+      ]
+    }
+  },
+  "errors": [],
+  "configuration": {
+    "correlationMinimumConfidence": 0.8,
+    "correlationOutputMode": "prompt-json",
+    "correlationScopeLabels": "namespace,service,component",
+    "localState": "ephemeral (persistState=false)",
+    "maxConcurrency": 2,
+    "requestTimeoutMs": 60000,
+    "fixtureDelayMs": 8000,
+    "repetitions": 2,
+    "armOrders": [
+      [
+        "withoutMemory",
+        "withMemory"
+      ],
+      [
+        "withMemory",
+        "withoutMemory"
+      ]
+    ]
+  },
+  "previousRun": {
+    "runId": "0a2fd7f7",
+    "raw": "benchmarks/history/0a2fd7f7.json",
+    "scored": true
+  },
+  "llmRequests": [
+    {
+      "event": "llm.request",
+      "operation": "preflight",
+      "id": "benchmark-model-check",
+      "ok": true,
+      "queueMs": 10,
+      "durationMs": 1596
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "benchmark-model-check",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 3181
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r1-1",
+      "ok": true,
+      "queueMs": 6,
+      "durationMs": 4071
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r1-2",
+      "ok": true,
+      "queueMs": 6,
+      "durationMs": 4859
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r1-3",
+      "ok": true,
+      "queueMs": 8,
+      "durationMs": 4428
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r1-4",
+      "ok": true,
+      "queueMs": 9,
+      "durationMs": 2498
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-d1ff2ffe5a80af2a6da99a976efb77e5ac8d993a584ef01641b21816bb423af3",
+      "ok": true,
+      "queueMs": 4,
+      "durationMs": 17779
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-1007ab94ac64c1339fdde42ca7a0cfbf973373cca59fe73a9af42bc760802504",
+      "ok": true,
+      "queueMs": 4,
+      "durationMs": 20448
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-c78b5201fad82da01e353d256b80a3f849aa9f5be54330665e8d520d82984b7b",
+      "ok": true,
+      "queueMs": 1814,
+      "durationMs": 19572
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-66940a8165640511de8d1c09bf3cd5feb008b11bf9244890124dd525af057e48",
+      "ok": true,
+      "queueMs": 16009,
+      "durationMs": 29260
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-database-only-r1-1",
+      "ok": true,
+      "queueMs": 13,
+      "durationMs": 4124
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-f674c717c643072bb95a16241726a481005ef4e7a847f63563cf9ca219b47da4",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 22123
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r1-1",
+      "ok": true,
+      "queueMs": 10,
+      "durationMs": 4532
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r1-2",
+      "ok": true,
+      "queueMs": 3,
+      "durationMs": 4620
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r1-3",
+      "ok": true,
+      "queueMs": 9,
+      "durationMs": 4266
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r1-4",
+      "ok": true,
+      "queueMs": 3,
+      "durationMs": 6370
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-a313062bd65690a385a0844d566481f26f87acc6c5a3d98091318ab90cd74602",
+      "ok": true,
+      "queueMs": 4,
+      "durationMs": 21220
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-13bdb8dbbdbe0a1246a504772a7f5f83ca7d87804702dfa708be142884a2c41c",
+      "ok": true,
+      "queueMs": 3,
+      "durationMs": 19985
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-ed26aa5f4ef39e7461a319b8ab74d60cbb4f4e830ad2f23e86c8421bbbb39989",
+      "ok": true,
+      "queueMs": 2094,
+      "durationMs": 22140
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-database-only-r1-1",
+      "ok": true,
+      "queueMs": 10,
+      "durationMs": 6054
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-3adc0773c092652f94de596cbb4bf13d8e34a10aa8433533bcc570e0b2dfe402",
+      "ok": true,
+      "queueMs": 7,
+      "durationMs": 21582
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r2-1",
+      "ok": true,
+      "queueMs": 9,
+      "durationMs": 5472
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r2-2",
+      "ok": true,
+      "queueMs": 3,
+      "durationMs": 5038
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r2-3",
+      "ok": true,
+      "queueMs": 9,
+      "durationMs": 6093
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-overlapping-r2-4",
+      "ok": true,
+      "queueMs": 8,
+      "durationMs": 4099
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-b54333f173238bf40f53d55a15631883283f2e120a268bdd6196f74cd6fdda16",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 26643
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-f6f22e72934d63afb9914e93bddb29143ac563cff09adadcee352f1ad74e4c87",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 20934
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-1a2ceff9a4e8e919f264dfce22aa8df0210e2f260802440bdc2034c1665d636d",
+      "ok": true,
+      "queueMs": 14950,
+      "durationMs": 19979
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-69d2ddb5732df9c5351969744b3db2bf57e123dda9abc9106801d4391311a885",
+      "ok": true,
+      "queueMs": 6230,
+      "durationMs": 26314
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withMemory-database-only-r2-1",
+      "ok": true,
+      "queueMs": 14,
+      "durationMs": 4164
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-69f02a6c6bd29ed1f39eec20d29c182d0d04c714137d927a87e9f37dd1aae28a",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 18512
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r2-1",
+      "ok": true,
+      "queueMs": 9,
+      "durationMs": 4186
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r2-2",
+      "ok": true,
+      "queueMs": 4,
+      "durationMs": 4630
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r2-3",
+      "ok": true,
+      "queueMs": 8,
+      "durationMs": 4238
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-overlapping-r2-4",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 2244
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-c2967ed1ee6e19849194b4e5d8d95c8ded44983940ae22ce972e1211094214de",
+      "ok": true,
+      "queueMs": 6,
+      "durationMs": 20687
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-e2367bcf4fc69a112e8c12040b89dc4103f94ee47e17293b4587e55244ae1395",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 22354
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-028747e389ad5038e9216773958755a806fddf8d6391ca31fedeb9f5a28cc16c",
+      "ok": true,
+      "queueMs": 5443,
+      "durationMs": 23435
+    },
+    {
+      "event": "llm.request",
+      "operation": "correlation",
+      "id": "b394e216-withoutMemory-database-only-r2-1",
+      "ok": true,
+      "queueMs": 8,
+      "durationMs": 4301
+    },
+    {
+      "event": "llm.request",
+      "operation": "rca",
+      "id": "alert-1e8a8863931d2c252374e136f78f6f7fe5ec450008a7a51e8493130096476248",
+      "ok": true,
+      "queueMs": 5,
+      "durationMs": 18374
+    }
+  ],
+  "agentErrors": [],
+  "finishedAt": "2026-10-03T14:01:04.361Z",
+  "toolCalls": [
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "database-only-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "database-only-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "database-only-r1",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "database-only-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "database-only-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "database-only-r1",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "database-only-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "database-only-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "database-only-r2",
+      "arm": "withMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "overlapping-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/deployments",
+      "caseId": "database-only-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/alerts",
+      "caseId": "database-only-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/metrics/query",
+      "caseId": "database-only-r2",
+      "arm": "withoutMemory"
+    },
+    {
+      "path": "/logs/query",
+      "caseId": "database-only-r2",
+      "arm": "withoutMemory"
+    }
+  ]
+}

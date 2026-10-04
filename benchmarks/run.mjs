@@ -626,23 +626,6 @@ function report() {
   }
   lines.push(
     "",
-    "## Case Outcomes",
-    "",
-    "| Arm / case | Status | Mode | Expected reuse | Top retrieval similarity | Reuse correct | Reason |",
-    "| --- | --- | --- | --- | ---: | --- | --- |",
-  );
-  for (const name of names)
-    for (const item of output.arms[name]?.investigations ?? []) {
-      const matches = JSON.parse(item.output?.historicalContext ?? "{}").matches ?? [];
-      const similarity = matches.length
-        ? Math.max(...matches.map((match) => match.score)).toFixed(4)
-        : "N/A";
-      lines.push(
-        `| ${name} / ${item.caseId} | ${item.status} | ${item.output?.investigationMode ?? "unknown"} | ${item.expectedReuse} | ${similarity} | ${item.memory?.reuseCorrect ?? "unknown/not assessed"} | ${item.output?.reuseDecisionReason ?? "unavailable"} |`,
-      );
-    }
-  lines.push(
-    "",
     "## Application LLM Timing",
     "",
     "Successful call durations include response handling, exclude queue wait, and are not Gateway inference-only latency.",

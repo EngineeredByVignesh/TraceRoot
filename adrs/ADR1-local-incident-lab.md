@@ -22,4 +22,4 @@ Use deterministic bad-deployment, connection-pool latency, and dependency-failur
 
 ## Setup
 
-Follow the sibling [IncidentLab runbook](../../IncidentLab/README.md) for cluster creation, observability, traffic generation, and cleanup. The lab requires no Cloudflare resource.
+Follow the [IncidentLab runbook](https://github.com/EngineeredByVignesh/IncidentLab) for cluster creation, observability, traffic generation, and cleanup. The lab requires no Cloudflare resource.

@@ -11,7 +11,7 @@ The small suite contains six cases covering exact/noisy recurrence, changed imag
 
 ## Prerequisites
 
-1. Follow [IncidentLab setup](../../IncidentLab/README.md), including observability port-forwards. Docker, kubectl, kind, demo service on 8080 and Prometheus on 9090 must be available.
+1. Follow [IncidentLab setup](https://github.com/EngineeredByVignesh/IncidentLab#setup), including observability port-forwards. Docker, kubectl, kind, demo service on 8080 and Prometheus on 9090 must be available.
 2. Install agent Node dependencies and Python tools API requirements using [TraceRoot setup](../README.md).
 3. Configure agent `.dev.vars` and tools API `.env`: authenticated webhook, selected model/provider, remote Vectorize, embedding model/dimensions, and tool endpoints. Keep secrets untracked.
 4. Enable `INCIDENT_MEMORY_REUSE_ENABLED=true` and configure `INCIDENT_MEMORY_REUSE_MIN_SCORE` before running. Do not tune thresholds after seeing results.

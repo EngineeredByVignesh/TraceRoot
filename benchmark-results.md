@@ -1,5 +1,7 @@
 # TraceRoot Benchmark Results
 
+Public summary: [small and large benchmarks](BENCHMARKS.md).
+
 Run: e5a2e55a. Window: 2026-10-04T09:20:01.459Z to 2026-10-04T09:43:11.800Z.
 Model: cloudflare/@cf/meta/llama-3.1-8b-instruct-fp8. Dataset: v4, SHA-256 ca5e4e63a10a249c45df5b5c6eb87d8833be0cce2ba4b9127111927e75449251.
 Memory reuse: true; similarity threshold 0.9. Correlation confidence threshold 0.8.
@@ -50,45 +52,6 @@ Memory reuse: true; similarity threshold 0.9. Correlation confidence threshold 0
 Observed total tool-request change: 16 fewer with memory. RCA-attempt change: 4 fewer. These arm totals also reflect any differences in workflow grouping and retries; do not attribute all changes to reuse.
 No-memory disables retrieval and reuse. Reuse saves the RCA generation request, not embeddings or alert correlation. A shorter investigation can finish before later alerts arrive, reducing active correlation candidates and increasing split workflows. Inspect grouping as well as per-workflow savings.
 
-## Case Outcomes
-
-| Arm / case | Status | Mode | Expected reuse | Top retrieval similarity | Reuse correct | Reason |
-| --- | --- | --- | --- | ---: | --- | --- |
-| withoutMemory / overlapping-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / database-only-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / changed-image-r1 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / different-database-cause-r1 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / noisy-recurrence-r1 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / insufficient-evidence-r1 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / overlapping-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / database-only-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / changed-image-r2 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / different-database-cause-r2 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / noisy-recurrence-r2 | complete | full | true | N/A | unknown/not assessed | memory-disabled |
-| withoutMemory / insufficient-evidence-r2 | complete | full | false | N/A | unknown/not assessed | memory-disabled |
-| withMemory / overlapping-r1 | complete | full | true | 0.8413 | false | below-retrieval-threshold |
-| withMemory / overlapping-r1 | complete | full | true | 0.8859 | false | below-retrieval-threshold |
-| withMemory / overlapping-r1 | complete | full | true | 0.8530 | false | below-retrieval-threshold |
-| withMemory / database-only-r1 | complete | historical-reuse | true | 0.9128 | true | current-evidence-satisfies-reuse-conditions |
-| withMemory / changed-image-r1 | complete | full | false | 0.8556 | true | deployment-image-mismatch |
-| withMemory / different-database-cause-r1 | complete | full | false | 0.8630 | true | conflicting-current-logs |
-| withMemory / noisy-recurrence-r1 | complete | full | true | 0.8720 | false | below-retrieval-threshold |
-| withMemory / insufficient-evidence-r1 | complete | full | false | 0.8471 | true | missing-current-log-signatures |
-| withMemory / overlapping-r2 | complete | full | true | 0.8413 | false | below-retrieval-threshold |
-| withMemory / overlapping-r2 | complete | full | true | 0.8859 | false | below-retrieval-threshold |
-| withMemory / overlapping-r2 | complete | full | true | 0.8530 | false | below-retrieval-threshold |
-| withMemory / database-only-r2 | complete | historical-reuse | true | 0.9128 | true | current-evidence-satisfies-reuse-conditions |
-| withMemory / changed-image-r2 | complete | full | false | 0.8556 | true | deployment-image-mismatch |
-| withMemory / different-database-cause-r2 | complete | full | false | 0.8630 | true | conflicting-current-logs |
-| withMemory / noisy-recurrence-r2 | complete | full | true | 0.8720 | false | below-retrieval-threshold |
-| withMemory / insufficient-evidence-r2 | complete | full | false | 0.8471 | true | missing-current-log-signatures |
-
 ## Application LLM Timing
 
 Successful call durations include response handling, exclude queue wait, and are not Gateway inference-only latency.
@@ -113,7 +76,7 @@ Tool counts are actual fixture HTTP requests including retries, not embedding/Ve
 
 ## Prerequisites And Errors
 
-Live smoke test: {"demoService":"Existing kind deployment /healthz reachable (HTTP 200); not proof of application health","prometheus":"ready","kube-prometheus-stack-alertmanager":"ready","loki":"ready","tools/deployments":200,"tools/alerts":200,"liveMetrics":200,"liveLogs":200,"agent":"ready","model":{"text":"OK","structuredOutput":{"correlated":true,"investigationId":"benchmark-active","confidence":1,"reason":"Both alerts share the same namespace, service, component, and start time, indicating a causal dependency.","latencyMs":3096,"modelCorrelated":true,"modelConfidence":1,"formatFallback":false,"outcome":"model"}}}.
+Prerequisite checks and model smoke-test evidence are retained in the raw result JSON.
 Runner errors: none.
 
 ## Raw Evidence

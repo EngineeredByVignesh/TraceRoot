@@ -1,118 +1,61 @@
-# TraceRoot Architecture and Functionality
+# TraceRoot Architecture
 
-TraceRoot is a chat-driven incident investigator for the local IncidentLab Kubernetes environment. It gathers deployment, alert, metric, and log evidence, uses an LLM to reason about it, and suggests a root cause and remediation. It can also collect evidence durably and retrieve saved incidents.
+TraceRoot accepts alerts or chat questions, gathers current evidence, and produces proposed incident explanations and fixes. Its Cloudflare runtime owns durable investigation state; the evidence API connects it to the separately maintained lab.
 
-## Architecture
+## High-Level Diagram
 
 ```mermaid
-flowchart TD
-    User[User in chat UI] --> Agent[Cloudflare Worker: ChatAgent]
-    Agent <--> State[Durable Object: chat and agent state]
-    Alerts -->|Authenticated firing webhook| Webhook[Alert receiver: filter and deduplicate]
-    Webhook --> Workflow
-    Workflow -->|Automatic RCA| State
-
-    Agent --> GoogleRoute{Google model route}
-    GoogleRoute -->|Gateway configured| Gateway[Cloudflare AI Gateway]
-    GoogleRoute -->|Direct| Gemini[Google Gemini]
-    Gateway --> Gemini
-    Agent -->|MODEL_PROVIDER=cloudflare| WorkersAI[Workers AI]
-    Agent -->|MODEL_PROVIDER=openrouter| OpenRouter[OpenRouter: selected chat model]
-
-    Agent -->|Interactive evidence tools| APIPath[Tool API connection]
-    Agent -->|Start and check status| Workflow[Cloudflare InvestigationWorkflow]
-    Workflow -->|Persisted evidence steps| APIPath
-    APIPath -->|Local development| API[Local FastAPI tools-api]
-    APIPath -->|Deployed Worker| Tunnel[Cloudflare Tunnel]
-    Tunnel --> API
-
-    subgraph Lab[IncidentLab: local kind cluster]
-        Demo[demo-service]
-        Prometheus[Prometheus]
-        Loki[Loki]
-        Alerts[Alertmanager]
-        K8s[Kubernetes deployment metadata]
-        Grafana[Grafana dashboards]
-        Demo -->|Metrics| Prometheus
-        Demo -->|Logs via collector| Loki
-        Prometheus -->|Alert rules| Alerts
-        Grafana --> Prometheus
-        Grafana --> Loki
-    end
-
-    API -->|PromQL| Prometheus
-    API -->|LogQL| Loki
-    API --> Alerts
-    API -->|kubectl| K8s
-
-    Agent --> Memory[Incident memory tools]
-    Memory -->|Google embeddings| GoogleRoute
-    Memory -->|EMBEDDING_PROVIDER=cloudflare| WorkersAI
-    Memory <--> Vectorize[Remote Vectorize: incident-memory]
-
-    Agent --> Telemetry[Worker logs and configured traces]
-    Workflow -->|Tool API request logs| Telemetry
+flowchart LR
+    Alerts["Alertmanager webhook"] --> Intake["Worker: authenticate, deduplicate, correlate"]
+    Chat["Chat UI"] --> Agent["RCA agent"]
+    Intake --> Incident["Incident state: Durable Object"]
+    Incident --> Workflow["Durable investigation: Workflows"]
+    Workflow --> Agent
+    Agent <--> Evidence["FastAPI evidence tools"]
+    Evidence <--> Lab["IncidentLab: metrics, logs, alerts, deployments"]
+    Agent <--> Memory["Vectorize: historical incidents and reuse rules"]
+    Agent <--> Models["Multi-provider AI: Workers AI / Gemini / OpenRouter"]
+    Models --> Gateway["Optional AI Gateway: model observability"]
+    Agent --> Report["RCA + Summary + Fix"]
+    Workflow --> Live["Live investigation UI"]
+    Report --> Live
 ```
 
-The Worker and workflow run under Wrangler during local development or on Cloudflare after deployment. IncidentLab and tools-api remain on the local machine. Vectorize is remote even during local development. Grafana is for human inspection; the agent queries the underlying services directly.
+The provider box is one configurable interface, not parallel inference or automatic failover. The Gateway box represents optional routing/observability on provider calls, not a separate generation stage. Embeddings are configured independently using Google or Workers AI.
 
-## Current Functionality
+## Investigation Lifecycle
 
-| Capability             | Tool                             | What it does                                                                                   |
-| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Deployment inspection  | `getDeployments`                 | Returns demo-service image, annotations, environment variables, namespace, and rollout status. |
-| Active alerts          | `getAlerts`                      | Fetches current Alertmanager alerts.                                                           |
-| Metrics analysis       | `queryMetrics`                   | Executes an instant PromQL query for error rate, latency, traffic, or health.                  |
-| Log inspection         | `queryLogs`                      | Executes LogQL over a requested lookback, returning up to 500 entries.                         |
-| Durable investigation  | `startInvestigationWorkflow`     | Starts persisted evidence collection and returns an instance ID and status.                    |
-| Investigation progress | `getInvestigationWorkflowStatus` | Retrieves workflow status and completed output by instance ID.                                 |
-| Historical context     | `searchSimilarIncidents`         | Embeds symptoms and retrieves up to ten similar incidents with metadata and similarity scores. |
-| Save an incident       | `rememberIncident`               | Stores a title, summary, root cause, remediation, labels, and creation time in Vectorize.      |
+1. The authenticated webhook filters firing alerts and deduplicates repeated deliveries. Resolved or unlisted alerts do not initiate work.
+2. With active investigations, the selected classification model considers correlation. Confidence validation and configured label scope constrain merges; rejected/failed classifications start separate incidents.
+3. A Workflow persists evidence steps and progress. Correlated alerts attach to the existing investigation instead of creating another workflow.
+4. Current deployment metadata and scoped logs validate historical reuse conditions. Retrieval similarity is not causal confidence; conflicts or missing conditions require full evidence collection and RCA generation.
+5. The agent returns `## RCA`, `## Summary`, and `## Fix`. Unknown causes require supported diagnostic or containment steps, not an invented cause-specific remedy.
+6. Durable Object state streams progress and reports to `/investigations` and `/investigations/<id>`. Home chat remains separate.
 
-The model selects tools based on the question and streams its answer to the chat UI. Its instructions request deployment, alert, metric, and log evidence before a root-cause answer, and historical searches early in investigations. These are model instructions, rather than a mandatory execution sequence. Each chat response is bounded to 20 model steps.
+Interactive chat can call evidence and memory tools directly or start a durable evidence-collection Workflow. Saving a confirmed incident is explicit through the memory tool; neither automatic RCA generation nor retrieval automatically approves a reusable history.
 
-## Investigation Flow
+## State & Providers
 
-1. The user describes symptoms, such as demo-service returning 5xx after a rollout.
-2. The agent can search memory for similar incidents and gather live evidence through tools-api.
-3. Tool results return to the model, which can request further evidence and explain its likely root cause and suggested remediation.
-4. For durable collection, the agent starts a workflow and later retrieves its status/output using the returned ID.
-5. When asked to remember the incident, the agent stores its RCA details for future retrieval.
+| Concern | Owner |
+| --- | --- |
+| Webhook/API and UI assets | Cloudflare Worker |
+| Chat, investigation snapshots, shared LLM budget | Agent Durable Object |
+| Step recovery and retries | Investigation Workflow |
+| Historical embeddings, metadata, reuse conditions | Remote Vectorize |
+| Evidence endpoints and Kubernetes inspection | Authenticated local tools API |
+| Model request metrics | Optional AI Gateway; application/tool logs complement it |
 
-The workflow collects five fixed evidence sources sequentially: deployment metadata, alerts, five-minute 5xx error rate, five-minute p95 latency, and recent logs. Each step has three retries with exponential backoff starting at ten seconds and a two-minute timeout. Completed steps are persisted for recovery. Manual runs return an evidence bundle. Alert-triggered runs additionally retrieve historical context, generate an RCA with the selected model, and publish it to chat. Memory retrieval is best effort; evidence, generation, and publication failures retry.
+`MODEL_PROVIDER` selects Workers AI, Gemini, or OpenRouter for chat/RCA. Optional classification overrides select their own provider/model; unset overrides use the main model. `EMBEDDING_PROVIDER` is independent, and vector dimensions/model space must match the stored index. Changing embedding models requires compatible re-indexing or another index.
 
-An optional authenticated Alertmanager webhook filters configured firing alert names and starts one Workflow per fingerprint/start-time pair. Repeated deliveries reuse the existing instance during its retention period. Resolved alerts are ignored. See [ADR7](adrs/ADR7-alert-webhook-investigations.md) for local receiver setup and authenticated status lookup.
+During local development, Vite/Wrangler runs the Worker, Durable Objects, and Workflows locally. Workers AI and Vectorize bindings remain remote. Shared model-call limits cover automatic correlation/RCA, not every chat or embedding call.
 
-Automatic investigations synchronize persistent progress to `/investigations` through the agent WebSocket, including evidence stages, retries, elapsed time, and streamed RCA text on `/investigations/<id>`. Reconnection restores snapshots, and status checks detect terminal Workflow failures. The list is ordered by start time, newest first. Automatic progress and reports do not appear on home or in popups.
+## Boundaries
 
-## State, Models, and Observability
+- Correlation considers currently active investigations; a completed incident is not an active grouping candidate.
+- Configured component boundaries suit independent lab incidents, not every real cross-service cascade.
+- Evidence tools target a configured demo deployment. They do not execute repairs or prove recovery.
+- Similar histories are hypotheses unless current evidence validates explicit reviewed reuse rules.
+- Webhook/tools API tokens do not provide application-wide UI authorization. Keep local instances private.
+- [IncidentLab](https://github.com/EngineeredByVignesh/IncidentLab) owns the demo app, Kubernetes manifests, alert rules, and observability runbook.
 
-- Chat state is persisted by the Agent, with a configured maximum of 100 persisted messages and chat recovery enabled. Old tool calls and reasoning are pruned from model context.
-- Chat uses a single provider factory: `MODEL_PROVIDER=google`, `cloudflare`, or `openrouter` selects `GEMINI_AI_MODEL`, `CLOUDFLARE_AI_MODEL`, or `OPENROUTER_AI_MODEL`. OpenRouter also requires its API key and base URL. Only the selected provider is initialized; configuration is required and there is no automatic application failover.
-- Embeddings use `EMBEDDING_PROVIDER` with `GEMINI_EMBEDDING_MODEL` or `CLOUDFLARE_EMBEDDING_MODEL`. `EMBEDDING_DIMENSIONS` must match the cosine Vectorize index; `INCIDENT_MEMORY_NAMESPACE` selects the namespace. Suggested values live in `.dev.vars.example`.
-- Google chat and embedding requests use AI Gateway when configured. Gateway logs expose model-level request status, latency, tokens, and estimated cost where reported.
-- The eight incident tools emit structured start, success, and failure logs with timing. HTTP responses from tools-api also emit request status and duration. Workers tracing is enabled in configuration; dedicated spans for every tool are not explicitly implemented.
-
-## Additional Starter Features
-
-The starter also supports adding/removing MCP servers, including OAuth callbacks for servers that require authentication. Connected MCP tools are available to the model; the built-in lab integration uses HTTP tools-api instead.
-
-Scheduling supports creating, listing, and cancelling tasks. Execution currently logs the task and broadcasts a notification to connected clients; it does not run an investigation automatically. Browser timezone lookup and a calculator with approval for large inputs are also retained starter features.
-
-## Current Boundaries
-
-- Built-in lab tools inspect evidence; they do not roll back deployments or execute remediation. Added MCP servers may expose additional capabilities.
-- Investigations start through chat or the opt-in Alertmanager webhook. The webhook requires local network and upstream receiver configuration.
-- Deployment inspection and durable evidence queries target demo-service; this is not a general multi-service incident platform.
-- Alert-triggered Workflows publish generated reports to investigation state; manual Workflows return evidence for the agent to interpret. Neither automatically saves an incident to Vectorize.
-- Vectorize writes become searchable asynchronously. Historical similarity is context, not confirmation of a root cause. Changing embedding models requires compatible re-indexing or a separate index.
-- tools-api authenticates evidence endpoints with a bearer token. The starter's MCP OAuth is separate from Google API credentials and does not establish application-wide user authorization.
-
-## Repository Ownership
-
-| Repository  | Owns                                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------------------- |
-| TraceRoot   | Agent UI/runtime, workflow, incident memory integration, tools-api, and ADRs.                            |
-| IncidentLab | Demo application, Docker image definition, Kubernetes manifests, and observability installation runbook. |
-
-See the [runbook](README.md) for local startup and [ADRs](adrs/ADR2-cloudflare-investigation-agent.md) for configuration decisions and upstream setup.
+[Local startup](README.md#running-locally) · [Configuration decisions](adrs/) · [Benchmark methodology and limitations](BENCHMARKS.md)

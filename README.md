@@ -36,27 +36,27 @@ This is the conceptual flow; historical retrieval and reuse validation happen be
 
 ## Tech Stack & Why
 
-| Technology | Why it is used |
-| --- | --- |
-| Cloudflare Workers | Host the agent API, authenticated webhook, and UI assets in one runtime. |
-| Cloudflare Agents + Durable Objects | Persist chat, investigation state, and shared model-call coordination; push progress to connected clients. |
-| Cloudflare Workflows | Persist investigation steps and retry failed work without repeating completed steps. |
-| Cloudflare Vectorize | Retrieve semantically similar incidents with metadata for evidence-checked historical reuse. |
-| Cloudflare AI Gateway | Observe provider requests, latency, token usage, failures, and estimated cost where available. |
-| Workers AI, Google Gemini, OpenRouter | Select the chat/RCA provider through configuration without changing the investigation pipeline. |
-| React + TypeScript + Vite | Provide interactive chat and realtime investigation pages with typed application code. |
-| FastAPI + Prometheus/Loki/Kubernetes tools | Expose authenticated evidence queries to the agent without granting it remediation commands. |
+| Technology                                 | Why it is used                                                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Cloudflare Workers                         | Host the agent API, authenticated webhook, and UI assets in one runtime.                                   |
+| Cloudflare Agents + Durable Objects        | Persist chat, investigation state, and shared model-call coordination; push progress to connected clients. |
+| Cloudflare Workflows                       | Persist investigation steps and retry failed work without repeating completed steps.                       |
+| Cloudflare Vectorize                       | Retrieve semantically similar incidents with metadata for evidence-checked historical reuse.               |
+| Cloudflare AI Gateway                      | Observe provider requests, latency, token usage, failures, and estimated cost where available.             |
+| Workers AI, Google Gemini, OpenRouter      | Select the chat/RCA provider through configuration without changing the investigation pipeline.            |
+| React + TypeScript + Vite                  | Provide interactive chat and realtime investigation pages with typed application code.                     |
+| FastAPI + Prometheus/Loki/Kubernetes tools | Expose authenticated evidence queries to the agent without granting it remediation commands.               |
 
 ## Benchmark Results
 
-| Observed metric | Small suite | Large suite |
-| --- | ---: | ---: |
-| Alerts replayed, both arms | 44 | 300 |
-| Reuse precision | 2/2 | 12/12 |
-| False reuse / negative tests | 0/6 | 0/6 |
-| Tool / RCA calls directly skipped by reuse | 6 / 2 | 36 / 12 |
-| RCA rubric accuracy, without → with memory | 78.6% → 71.4% | 61.1% → 75.9% |
-| p95 time-to-RCA, without → with memory | 55.60s → 62.28s | 93.13s → 77.76s |
+| Observed metric                            |     Small suite |     Large suite |
+| ------------------------------------------ | --------------: | --------------: |
+| Alerts replayed, both arms                 |              44 |             300 |
+| Reuse precision                            |             2/2 |           12/12 |
+| False reuse / negative tests               |             0/6 |             0/6 |
+| Tool / RCA calls directly skipped by reuse |           6 / 2 |         36 / 12 |
+| RCA rubric accuracy, without → with memory |   78.6% → 71.4% |   61.1% → 75.9% |
+| p95 time-to-RCA, without → with memory     | 55.60s → 62.28s | 93.13s → 77.76s |
 
 Large-suite RCA accuracy increased by an observed **14.8 percentage points**, and p95 fell **16.5%**, but twelve without-memory workflows failed after quota exhaustion. These are not proven causal memory improvements. Cost is being optimized; we do not claim general cost savings.
 
@@ -103,9 +103,3 @@ Open the URL printed by Vite for chat; use `/investigations` for automatic inves
 - [AI Gateway](adrs/ADR5-ai-gateway-observability.md): set the shared `AI_GATEWAY_BASE_URL` account/gateway root and optional token; provider routes are derived automatically.
 - [Memory and reviewed reuse](memory-reuse.md): retrieval is not causal proof, and reuse requires explicit matching conditions.
 - [Env examples](cloudflare/agents-starter/.dev.vars.example) and [tools API settings](tools-api/.env.example): complete configuration reference.
-
-## Contributing & Security
-
-See [contributing](CONTRIBUTING.md) for focused changes and local checks, and [security guidance](SECURITY.md) before exposing an instance. The starter does not provide application-wide user authorization; keep development services private. Cloudflare model, embedding, and memory calls can consume real quota during local development.
-
-Licensed under [MIT](LICENSE), retaining the original [Cloudflare agent starter notice](cloudflare/agents-starter/LICENSE).
